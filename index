@@ -1,1 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejador de Posts - Tela Cheia</title>
+    <style>
+        :root {
+            /* Cores Fixas */
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
 
+            /* Tema Claro (Padrão) */
+            --bg-main: #f0f2f5;
+            --bg-header: #1e1e2f;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --upload-bg: #f8fafc;
+            --badge-bg: #f3f4f6;
+        }
+
+        /* Tema Escuro */
+        [data-theme="dark"] {
+            --bg-main: #121212;
+            --bg-header: #000000;
+            --bg-card: #1e1e1e;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-color: #374151;
+            --upload-bg: #2d3748;
+            --badge-bg: #374151;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- CABEÇALHO GLOBAL --- */
+        .global-header {
+            background-color: var(--bg-header);
+            color: white;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+
+        .global-header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-header {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-header:hover { background: var(--primary-hover); }
+        .btn-theme { background: #4b5563; }
+        .btn-theme:hover { background: #374151; }
+
+        /* --- CONTAINER PRINCIPAL --- */
+        .container {
+            width: 100%;
+            height: calc(100vh - 50px);
+            padding: 15px;
+        }
+
+        /* --- DASHBOARD --- */
+        #dashboard-view { height: 100%; width: 100%; }
+
+        .grid-dates {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .date-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, background-color 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .date-card:hover { transform: scale(1.02); }
+
+        .date-header {
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .hours-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            padding: 10px;
+            flex: 1;
+        }
+
+        .hour-badge {
+            background: var(--badge-bg);
+            color: var(--text-muted);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .hour-badge.scheduled {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+
+        /* --- TELA DE DETALHES --- */
+        #detail-view {
+            display: none;
+            height: 100%;
+            width: 100%;
+            flex-direction: column;
+        }
+
+        header.detail-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 50px;
+            margin-bottom: 15px;
+        }
+
+        .back-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .slots-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            flex: 1;
+        }
+
+        .slot-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            border: 2px solid var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .slot-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .file-upload-wrapper { margin-bottom: 10px; }
+        .file-upload-wrapper input[type="file"] { display: none; }
+
+        .custom-file-upload {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 5px;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-muted);
+            background: var(--upload-bg);
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .custom-file-upload.drag-active {
+            background: #e0e7ff;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .preview-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 65px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .btn-remove-img {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .btn-remove-img:hover { background: var(--danger-hover); }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            resize: none;
+            flex: 1;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        /* Checkbox de Marcação Manual */
+        .manual-check-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .manual-check-wrapper input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--success);
+        }
+
+        .manual-check-wrapper label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        button.action-btn {
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-download { background: var(--primary); color: white; }
+        .btn-download:hover { background: var(--primary-hover); }
+        .btn-save { background: var(--success); color: white; width: 100%; grid-column: span 2; padding: 10px; font-size: 0.95rem;}
+
+        /* --- MODAL DE RELATÓRIO --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 12px;
+            width: 400px;
+            max-width: 90%;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .modal-buttons { display: grid; gap: 12px; }
+
+        .modal-btn {
+            background: var(--bg-main);
+            color: var(--text-main);
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        
+        .modal-btn.primary { background: var(--primary); color: white; border: none; }
+        .modal-close { margin-top: 20px; background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .date-selector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <header class="global-header">
+        <h1>Gerenciador de Mídias</h1>
+        <div class="header-actions">
+            <button class="btn-header btn-theme" onclick="toggleTheme()">🌓 Tema Escuro</button>
+            <button class="btn-header" onclick="openReportModal()">📊 Relatório</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="dashboard-view">
+            <div class="grid-dates" id="grid-dates"></div>
+        </div>
+
+        <div id="detail-view">
+            <header class="detail-header">
+                <button class="back-btn" onclick="showDashboard()">⬅ Voltar</button>
+                <h2 id="detail-title">Detalhes do Dia</h2>
+            </header>
+            <div class="slots-container" id="slots-container"></div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="report-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-title">Tipo de Relatório</div>
+            <div id="modal-step-1" class="modal-buttons">
+                <button class="modal-btn primary" onclick="showDateSelector()">Relatório do Dia</button>
+                <button class="modal-btn primary" onclick="generateReport('week')">Relatório Semanal</button>
+            </div>
+            <div id="modal-step-2" class="modal-buttons date-selector-grid" style="display: none;"></div>
+            <button class="modal-btn modal-close" onclick="closeReportModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        const TIMES = ['07:00', '12:00', '15:00', '18:00', '20:00', '22:30'];
+        const numDays = 9;
+        
+        const cardColors = [
+            'linear-gradient(135deg, #FF6B6B 0%, #EE5253 100%)',
+            'linear-gradient(135deg, #48DBFB 0%, #0ABDE3 100%)',
+            'linear-gradient(135deg, #1DD1A1 0%, #10AC84 100%)',
+            'linear-gradient(135deg, #FECA57 0%, #FF9F43 100%)',
+            'linear-gradient(135deg, #5F27CD 0%, #341F97 100%)',
+            'linear-gradient(135deg, #FF9FF3 0%, #F368E0 100%)',
+            'linear-gradient(135deg, #54A0FF 0%, #2E86DE 100%)',
+            'linear-gradient(135deg, #00D2D3 0%, #01A3A4 100%)',
+            'linear-gradient(135deg, #FF7F50 0%, #E15F41 100%)'
+        ];
+
+        let db = JSON.parse(localStorage.getItem('planejador_db')) || {};
+        let tempImages = {}; 
+
+        // Tema Escuro
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            if(isDark) {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        if(localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+
+        function generateDates() {
+            const dates = [];
+            let today = new Date();
+            for (let i = 0; i < numDays; i++) {
+                let currentDate = new Date(today);
+                currentDate.setDate(today.getDate() + i);
+                let day = String(currentDate.getDate()).padStart(2, '0');
+                let month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                let dateId = `${day}-${month}-${currentDate.getFullYear()}`;
+                let dateLabel = `${day}/${month}`;
+                
+                dates.push({ id: dateId, label: dateLabel });
+                
+                if(!db[dateId]) {
+                    db[dateId] = {};
+                    TIMES.forEach(time => { db[dateId][time] = { caption: '', isScheduled: false, manual: false }; });
+                }
+                if(!tempImages[dateId]) {
+                    tempImages[dateId] = {};
+                    TIMES.forEach(time => { tempImages[dateId][time] = { file: null, url: null }; });
+                }
+            }
+            return dates;
+        }
+
+        const dates = generateDates();
+
+        function renderDashboard() {
+            const grid = document.getElementById('grid-dates');
+            grid.innerHTML = '';
+
+            dates.forEach((dateObj, index) => {
+                const card = document.createElement('div');
+                card.className = 'date-card';
+                card.onclick = () => showDetail(dateObj.id, dateObj.label);
+
+                const header = document.createElement('div');
+                header.className = 'date-header';
+                header.style.background = cardColors[index];
+                header.innerText = dateObj.label;
+
+                const hoursGrid = document.createElement('div');
+                hoursGrid.className = 'hours-grid';
+
+                TIMES.forEach(time => {
+                    const badge = document.createElement('div');
+                    badge.className = `hour-badge ${db[dateObj.id][time].isScheduled ? 'scheduled' : ''}`;
+                    badge.innerText = time;
+                    hoursGrid.appendChild(badge);
+                });
+
+                card.appendChild(header);
+                card.appendChild(hoursGrid);
+                grid.appendChild(card);
+            });
+        }
+
+        function showDetail(dateId, dateLabel) {
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'flex';
+            document.getElementById('detail-title').innerText = `Agendamentos: ${dateLabel}`;
+
+            const container = document.getElementById('slots-container');
+            container.innerHTML = '';
+
+            TIMES.forEach((time, index) => {
+                const slotData = db[dateId][time];
+                const imageSlot = tempImages[dateId][time];
+                const isManual = slotData.manual || false;
+                const inputId = `file-${dateId}-${index}`;
+                const borderColor = slotData.isScheduled ? 'var(--success)' : 'transparent';
+                
+                const slotHTML = `
+                    <div class="slot-card" style="border-color: ${borderColor}">
+                        <div class="slot-header">⏰ ${time}</div>
+                        
+                        <div class="file-upload-wrapper">
+                            <label for="${inputId}" class="custom-file-upload" id="label-${inputId}" 
+                                style="${imageSlot.url ? 'display:none;' : 'display:flex;'}"
+                                ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${dateId}', '${time}', '${inputId}')">
+                                🖼️ Clique ou Arraste a Imagem
+                            </label>
+                            <input type="file" id="${inputId}" accept="image/*" onchange="handleFileInput(event, '${dateId}', '${time}', '${inputId}')">
+                            
+                            <div class="preview-container" id="preview-container-${inputId}" style="${imageSlot.url ? 'display:flex;' : 'display:none;'}">
+                                <img id="preview-${inputId}" class="image-preview" src="${imageSlot.url || ''}">
+                                <button class="btn-remove-img" onclick="removeImage('${dateId}', '${time}', '${inputId}')">🗑️ Trocar/Apagar</button>
+                            </div>
+                        </div>
+
+                        <textarea id="caption-${dateId}-${index}" placeholder="Digite a legenda...">${slotData.caption || ''}</textarea>
+                        
+                        <div class="manual-check-wrapper">
+                            <input type="checkbox" id="manual-${dateId}-${index}" ${isManual ? 'checked' : ''}>
+                            <label for="manual-${dateId}-${index}">Já programado externamente</label>
+                        </div>
+
+                        <div class="actions">
+                            <button class="action-btn btn-download" onclick="downloadOriginalImage('${dateId}', '${time}')">⬇️ Baixar Imagem</button>
+                            <button class="action-btn btn-save" id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)">✅ Salvar</button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += slotHTML;
+            });
+        }
+
+        function showDashboard() {
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+            renderDashboard();
+        }
+
+        // Upload e Remoção
+        function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-active'); }
+        function handleDragLeave(e) { e.preventDefault(); e.currentTarget.classList.remove('drag-active'); }
+        function handleDrop(e, dateId, time, inputId) {
+            e.preventDefault(); e.currentTarget.classList.remove('drag-active');
+            if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0], dateId, time, inputId);
+        }
+        function handleFileInput(e, dateId, time, inputId) {
+            if (e.target.files.length > 0) processFile(e.target.files[0], dateId, time, inputId);
+        }
+
+        function processFile(file, dateId, time, inputId) {
+            if (file && file.type.startsWith('image/')) {
+                const imageUrl = URL.createObjectURL(file);
+                tempImages[dateId][time].file = file;
+                tempImages[dateId][time].url = imageUrl;
+                document.getElementById(`label-${inputId}`).style.display = 'none';
+                document.getElementById(`preview-${inputId}`).src = imageUrl;
+                document.getElementById(`preview-container-${inputId}`).style.display = 'flex';
+            }
+        }
+
+        function removeImage(dateId, time, inputId) {
+            tempImages[dateId][time].file = null;
+            tempImages[dateId][time].url = null;
+            document.getElementById(inputId).value = ''; 
+            document.getElementById(`preview-container-${inputId}`).style.display = 'none';
+            document.getElementById(`label-${inputId}`).style.display = 'flex';
+        }
+
+        function saveSlot(dateId, time, index, event) {
+            const caption = document.getElementById(`caption-${dateId}-${index}`).value;
+            const isManual = document.getElementById(`manual-${dateId}-${index}`).checked;
+            
+            db[dateId][time].caption = caption;
+            db[dateId][time].manual = isManual;
+            
+            if(tempImages[dateId][time].file || caption.trim() !== "" || isManual) {
+                db[dateId][time].isScheduled = true;
+                event.target.closest('.slot-card').style.borderColor = 'var(--success)';
+            } else {
+                db[dateId][time].isScheduled = false;
+                event.target.closest('.slot-card').style.borderColor = 'transparent';
+            }
+            localStorage.setItem('planejador_db', JSON.stringify(db));
+
+            // Efeito visual de sucesso no botão
+            const btn = document.getElementById(`btn-save-${dateId}-${index}`);
+            const originalText = btn.innerText;
+            const originalBg = btn.style.background;
+            btn.innerText = "Salvo!";
+            btn.style.background = "#059669";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = originalBg;
+            }, 1000);
+        }
+
+        function downloadOriginalImage(dateId, time) {
+            const imageSlot = tempImages[dateId][time];
+            if (!imageSlot.url) {
+                alert("Nenhuma imagem anexada neste horário.");
+                return;
+            }
+            const link = document.createElement('a');
+            link.href = imageSlot.url;
+            const extension = imageSlot.file.name.split('.').pop();
+            link.download = `post_${dateId}_${time.replace(':','')}_ORIGINAL.${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Relatórios 
+        function openReportModal() {
+            document.getElementById('report-modal').style.display = 'flex';
+            document.getElementById('modal-step-1').style.display = 'grid';
+            document.getElementById('modal-step-2').style.display = 'none';
+            document.getElementById('modal-title').innerText = 'Tipo de Relatório';
+        }
+        function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
+        
+        function showDateSelector() {
+            document.getElementById('modal-step-1').style.display = 'none';
+            document.getElementById('modal-title').innerText = 'Escolha a Data';
+            const step2 = document.getElementById('modal-step-2');
+            step2.style.display = 'grid';
+            step2.innerHTML = '';
+            dates.forEach(d => {
+                const btn = document.createElement('button');
+                btn.className = 'modal-btn'; btn.innerText = d.label;
+                btn.onclick = () => generateReport('day', d.id, d.label);
+                step2.appendChild(btn);
+            });
+        }
+
+        function generateReport(type, dateId = null, dateLabel = null) {
+            closeReportModal();
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            let reportDates = type === 'day' ? dates.filter(d => d.id === dateId) : dates;
+            
+            canvas.width = 600;
+            canvas.height = 100 + (reportDates.length * 150) + 40;
+
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#1e1e2f'; ctx.fillRect(0, 0, canvas.width, 80);
+
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'center';
+            ctx.fillText(type === 'day' ? `RELATÓRIO DIÁRIO - ${dateLabel}` : 'RELATÓRIO SEMANAL', 300, 45);
+
+            let currentY = 120;
+            reportDates.forEach(d => {
+                ctx.fillStyle = '#4f46e5'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'left';
+                ctx.fillText(`Data: ${d.label}`, 40, currentY);
+                currentY += 40;
+
+                ctx.font = '16px Arial';
+                let col = 0; let tempY = currentY;
+                TIMES.forEach(time => {
+                    const isScheduled = db[d.id][time].isScheduled;
+                    ctx.fillStyle = isScheduled ? '#059669' : '#dc2626';
+                    ctx.fillText(`${time} ${isScheduled ? '✅ Programado' : '❌ Não Programado'}`, col === 0 ? 40 : 300, tempY);
+                    col++; if(col > 1) { col = 0; tempY += 30; }
+                });
+                currentY += 100;
+            });
+
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL("image/png");
+            link.download = `Relatorio.png`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        renderDashboard();
+    </script>
+</body>
+</html>
