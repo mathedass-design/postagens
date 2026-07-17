@@ -406,9 +406,10 @@
     </div>
 
     <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbylZjdUcRyYpTTgo815SkGHE3oaXMB7dO2cNhVlU9iO5_KfRV6Uz21T0-gFpADAXpMR/exec';
         const TIMES = ['07:00', '12:00', '15:00', '18:00', '20:00', '22:30'];
         const numDays = 9;
-        
+
         const cardColors = [
             'linear-gradient(135deg, #FF6B6B 0%, #EE5253 100%)',
             'linear-gradient(135deg, #48DBFB 0%, #0ABDE3 100%)',
@@ -421,14 +422,14 @@
             'linear-gradient(135deg, #FF7F50 0%, #E15F41 100%)'
         ];
 
-        let db = JSON.parse(localStorage.getItem('planejador_db')) || {};
-        let tempImages = {}; 
+        let db = {};
+        let tempImages = {};
+        let dates = [];
 
-        // Tema Escuro
         function toggleTheme() {
             const body = document.body;
             const isDark = body.getAttribute('data-theme') === 'dark';
-            if(isDark) {
+            if (isDark) {
                 body.removeAttribute('data-theme');
                 localStorage.setItem('theme', 'light');
             } else {
@@ -437,36 +438,91 @@
             }
         }
 
-        if(localStorage.getItem('theme') === 'dark') {
+        if (localStorage.getItem('theme') === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
         }
 
-        function generateDates() {
-            const dates = [];
-            let today = new Date();
-            for (let i = 0; i < numDays; i++) {
-                let currentDate = new Date(today);
-                currentDate.setDate(today.getDate() + i);
-                let day = String(currentDate.getDate()).padStart(2, '0');
-                let month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                let dateId = `${day}-${month}-${currentDate.getFullYear()}`;
-                let dateLabel = `${day}/${month}`;
-                
-                dates.push({ id: dateId, label: dateLabel });
-                
-                if(!db[dateId]) {
-                    db[dateId] = {};
-                    TIMES.forEach(time => { db[dateId][time] = { caption: '', isScheduled: false, manual: false }; });
-                }
-                if(!tempImages[dateId]) {
-                    tempImages[dateId] = {};
-                    TIMES.forEach(time => { tempImages[dateId][time] = { file: null, url: null }; });
-                }
-            }
-            return dates;
+        function normalizeDateId(value) {
+            return String(value || '').trim().replaceAll('/', '-');
         }
 
-        const dates = generateDates();
+        function generateDates() {
+            const generated = [];
+            const today = new Date();
+
+            for (let i = 0; i < numDays; i++) {
+                const currentDate = new Date(today);
+                currentDate.setDate(today.getDate() + i);
+
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const dateId = `${day}-${month}-${currentDate.getFullYear()}`;
+                const dateLabel = `${day}/${month}`;
+
+                generated.push({ id: dateId, label: dateLabel });
+
+                db[dateId] = db[dateId] || {};
+                tempImages[dateId] = tempImages[dateId] || {};
+
+                TIMES.forEach(time => {
+                    db[dateId][time] = db[dateId][time] || {
+                        caption: '',
+                        isScheduled: false,
+                        manual: false,
+                        imageUrl: ''
+                    };
+                    tempImages[dateId][time] = tempImages[dateId][time] || {
+                        file: null,
+                        url: db[dateId][time].imageUrl || '',
+                        removeRequested: false
+                    };
+                });
+            }
+            return generated;
+        }
+
+        async function loadFromCloud() {
+            const title = document.querySelector('.global-header h1');
+            const originalTitle = title.innerText;
+            title.innerText = 'Carregando dados...';
+
+            try {
+                const response = await fetch(`${API_URL}?t=${Date.now()}`, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    redirect: 'follow'
+                });
+
+                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+
+                const result = await response.json();
+                if (!result.sucesso) throw new Error(result.mensagem || 'Não foi possível carregar os dados.');
+
+                (result.postagens || []).forEach(post => {
+                    const dateId = normalizeDateId(post.data);
+                    const time = String(post.horario || '').trim();
+                    if (!db[dateId] || !db[dateId][time]) return;
+
+                    db[dateId][time] = {
+                        caption: post.legenda || '',
+                        isScheduled: Boolean(post.programado),
+                        manual: Boolean(post.manual),
+                        imageUrl: post.link_imagem || ''
+                    };
+
+                    tempImages[dateId][time] = {
+                        file: null,
+                        url: post.link_imagem || '',
+                        removeRequested: false
+                    };
+                });
+            } catch (error) {
+                console.error(error);
+                alert('Não foi possível carregar os dados da planilha. Verifique se o aplicativo do Apps Script foi publicado para “Qualquer pessoa”.');
+            } finally {
+                title.innerText = originalTitle;
+            }
+        }
 
         function renderDashboard() {
             const grid = document.getElementById('grid-dates');
@@ -509,43 +565,45 @@
             TIMES.forEach((time, index) => {
                 const slotData = db[dateId][time];
                 const imageSlot = tempImages[dateId][time];
-                const isManual = slotData.manual || false;
                 const inputId = `file-${dateId}-${index}`;
                 const borderColor = slotData.isScheduled ? 'var(--success)' : 'transparent';
-                
+
                 const slotHTML = `
                     <div class="slot-card" style="border-color: ${borderColor}">
                         <div class="slot-header">⏰ ${time}</div>
-                        
                         <div class="file-upload-wrapper">
-                            <label for="${inputId}" class="custom-file-upload" id="label-${inputId}" 
+                            <label for="${inputId}" class="custom-file-upload" id="label-${inputId}"
                                 style="${imageSlot.url ? 'display:none;' : 'display:flex;'}"
                                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${dateId}', '${time}', '${inputId}')">
                                 🖼️ Clique ou Arraste a Imagem
                             </label>
                             <input type="file" id="${inputId}" accept="image/*" onchange="handleFileInput(event, '${dateId}', '${time}', '${inputId}')">
-                            
                             <div class="preview-container" id="preview-container-${inputId}" style="${imageSlot.url ? 'display:flex;' : 'display:none;'}">
                                 <img id="preview-${inputId}" class="image-preview" src="${imageSlot.url || ''}">
                                 <button class="btn-remove-img" onclick="removeImage('${dateId}', '${time}', '${inputId}')">🗑️ Trocar/Apagar</button>
                             </div>
                         </div>
-
-                        <textarea id="caption-${dateId}-${index}" placeholder="Digite a legenda...">${slotData.caption || ''}</textarea>
-                        
+                        <textarea id="caption-${dateId}-${index}" placeholder="Digite a legenda...">${escapeHtml(slotData.caption || '')}</textarea>
                         <div class="manual-check-wrapper">
-                            <input type="checkbox" id="manual-${dateId}-${index}" ${isManual ? 'checked' : ''}>
+                            <input type="checkbox" id="manual-${dateId}-${index}" ${slotData.manual ? 'checked' : ''}>
                             <label for="manual-${dateId}-${index}">Já programado externamente</label>
                         </div>
-
                         <div class="actions">
                             <button class="action-btn btn-download" onclick="downloadOriginalImage('${dateId}', '${time}')">⬇️ Baixar Imagem</button>
-                            <button class="action-btn btn-save" id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)">✅ Salvar</button>
+                            <button class="action-btn btn-save" id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)">☁️ Salvar na nuvem</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 container.innerHTML += slotHTML;
             });
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
 
         function showDashboard() {
@@ -554,11 +612,11 @@
             renderDashboard();
         }
 
-        // Upload e Remoção
         function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-active'); }
         function handleDragLeave(e) { e.preventDefault(); e.currentTarget.classList.remove('drag-active'); }
         function handleDrop(e, dateId, time, inputId) {
-            e.preventDefault(); e.currentTarget.classList.remove('drag-active');
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-active');
             if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0], dateId, time, inputId);
         }
         function handleFileInput(e, dateId, time, inputId) {
@@ -566,68 +624,125 @@
         }
 
         function processFile(file, dateId, time, inputId) {
-            if (file && file.type.startsWith('image/')) {
-                const imageUrl = URL.createObjectURL(file);
-                tempImages[dateId][time].file = file;
-                tempImages[dateId][time].url = imageUrl;
-                document.getElementById(`label-${inputId}`).style.display = 'none';
-                document.getElementById(`preview-${inputId}`).src = imageUrl;
-                document.getElementById(`preview-container-${inputId}`).style.display = 'flex';
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Escolha um arquivo de imagem válido.');
+                return;
             }
+
+            if (file.size > 20 * 1024 * 1024) {
+                alert('A imagem ultrapassa 20 MB. Escolha um arquivo menor para conseguir enviar pelo Apps Script.');
+                return;
+            }
+
+            const imageUrl = URL.createObjectURL(file);
+            tempImages[dateId][time] = { file, url: imageUrl, removeRequested: false };
+            document.getElementById(`label-${inputId}`).style.display = 'none';
+            document.getElementById(`preview-${inputId}`).src = imageUrl;
+            document.getElementById(`preview-container-${inputId}`).style.display = 'flex';
         }
 
         function removeImage(dateId, time, inputId) {
-            tempImages[dateId][time].file = null;
-            tempImages[dateId][time].url = null;
-            document.getElementById(inputId).value = ''; 
+            const current = tempImages[dateId][time];
+            if (current.file && current.url) URL.revokeObjectURL(current.url);
+            tempImages[dateId][time] = { file: null, url: '', removeRequested: true };
+            document.getElementById(inputId).value = '';
             document.getElementById(`preview-container-${inputId}`).style.display = 'none';
             document.getElementById(`label-${inputId}`).style.display = 'flex';
         }
 
-        function saveSlot(dateId, time, index, event) {
+        function fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function saveSlot(dateId, time, index, event) {
             const caption = document.getElementById(`caption-${dateId}-${index}`).value;
             const isManual = document.getElementById(`manual-${dateId}-${index}`).checked;
-            
-            db[dateId][time].caption = caption;
-            db[dateId][time].manual = isManual;
-            
-            if(tempImages[dateId][time].file || caption.trim() !== "" || isManual) {
-                db[dateId][time].isScheduled = true;
-                event.target.closest('.slot-card').style.borderColor = 'var(--success)';
-            } else {
-                db[dateId][time].isScheduled = false;
-                event.target.closest('.slot-card').style.borderColor = 'transparent';
-            }
-            localStorage.setItem('planejador_db', JSON.stringify(db));
-
-            // Efeito visual de sucesso no botão
-            const btn = document.getElementById(`btn-save-${dateId}-${index}`);
+            const imageSlot = tempImages[dateId][time];
+            const btn = event.currentTarget;
+            const card = btn.closest('.slot-card');
             const originalText = btn.innerText;
-            const originalBg = btn.style.background;
-            btn.innerText = "Salvo!";
-            btn.style.background = "#059669";
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = originalBg;
-            }, 1000);
+
+            const hasImage = Boolean(imageSlot.file || imageSlot.url);
+            const isScheduled = hasImage || caption.trim() !== '' || isManual;
+
+            btn.disabled = true;
+            btn.innerText = imageSlot.file ? 'Enviando imagem...' : 'Salvando...';
+
+            try {
+                const payload = {
+                    data: dateId,
+                    horario: time,
+                    legenda: caption,
+                    link_imagem: imageSlot.removeRequested ? '' : (imageSlot.file ? '' : imageSlot.url),
+                    programado: isScheduled,
+                    manual: isManual
+                };
+
+                if (imageSlot.file) {
+                    payload.imagem_base64 = await fileToDataUrl(imageSlot.file);
+                    payload.nome_imagem = imageSlot.file.name;
+                    payload.tipo_imagem = imageSlot.file.type;
+                }
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
+                    redirect: 'follow'
+                });
+
+                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+                const result = await response.json();
+                if (!result.sucesso) throw new Error(result.mensagem || 'Falha ao salvar.');
+
+                db[dateId][time] = {
+                    caption,
+                    manual: isManual,
+                    isScheduled,
+                    imageUrl: result.link_imagem || ''
+                };
+
+                tempImages[dateId][time] = {
+                    file: null,
+                    url: result.link_imagem || '',
+                    removeRequested: false
+                };
+
+                card.style.borderColor = isScheduled ? 'var(--success)' : 'transparent';
+                btn.innerText = '✅ Salvo na nuvem!';
+                setTimeout(() => { btn.innerText = originalText; }, 1300);
+            } catch (error) {
+                console.error(error);
+                btn.innerText = '❌ Erro ao salvar';
+                alert(`Não foi possível salvar: ${error.message}`);
+                setTimeout(() => { btn.innerText = originalText; }, 1800);
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         function downloadOriginalImage(dateId, time) {
             const imageSlot = tempImages[dateId][time];
             if (!imageSlot.url) {
-                alert("Nenhuma imagem anexada neste horário.");
+                alert('Nenhuma imagem anexada neste horário.');
                 return;
             }
+
             const link = document.createElement('a');
             link.href = imageSlot.url;
-            const extension = imageSlot.file.name.split('.').pop();
-            link.download = `post_${dateId}_${time.replace(':','')}_ORIGINAL.${extension}`;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            if (imageSlot.file) link.download = imageSlot.file.name;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // Relatórios 
         function openReportModal() {
             document.getElementById('report-modal').style.display = 'flex';
             document.getElementById('modal-step-1').style.display = 'grid';
@@ -635,7 +750,7 @@
             document.getElementById('modal-title').innerText = 'Tipo de Relatório';
         }
         function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
-        
+
         function showDateSelector() {
             document.getElementById('modal-step-1').style.display = 'none';
             document.getElementById('modal-title').innerText = 'Escolha a Data';
@@ -644,7 +759,8 @@
             step2.innerHTML = '';
             dates.forEach(d => {
                 const btn = document.createElement('button');
-                btn.className = 'modal-btn'; btn.innerText = d.label;
+                btn.className = 'modal-btn';
+                btn.innerText = d.label;
                 btn.onclick = () => generateReport('day', d.id, d.label);
                 step2.appendChild(btn);
             });
@@ -654,14 +770,12 @@
             closeReportModal();
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            let reportDates = type === 'day' ? dates.filter(d => d.id === dateId) : dates;
-            
+            const reportDates = type === 'day' ? dates.filter(d => d.id === dateId) : dates;
+
             canvas.width = 600;
             canvas.height = 100 + (reportDates.length * 150) + 40;
-
             ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#1e1e2f'; ctx.fillRect(0, 0, canvas.width, 80);
-
             ctx.fillStyle = '#ffffff'; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'center';
             ctx.fillText(type === 'day' ? `RELATÓRIO DIÁRIO - ${dateLabel}` : 'RELATÓRIO SEMANAL', 300, 45);
 
@@ -670,25 +784,33 @@
                 ctx.fillStyle = '#4f46e5'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'left';
                 ctx.fillText(`Data: ${d.label}`, 40, currentY);
                 currentY += 40;
-
                 ctx.font = '16px Arial';
                 let col = 0; let tempY = currentY;
                 TIMES.forEach(time => {
                     const isScheduled = db[d.id][time].isScheduled;
                     ctx.fillStyle = isScheduled ? '#059669' : '#dc2626';
                     ctx.fillText(`${time} ${isScheduled ? '✅ Programado' : '❌ Não Programado'}`, col === 0 ? 40 : 300, tempY);
-                    col++; if(col > 1) { col = 0; tempY += 30; }
+                    col++;
+                    if (col > 1) { col = 0; tempY += 30; }
                 });
                 currentY += 100;
             });
 
             const link = document.createElement('a');
-            link.href = canvas.toDataURL("image/png");
-            link.download = `Relatorio.png`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            link.href = canvas.toDataURL('image/png');
+            link.download = 'Relatorio.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
-        renderDashboard();
+        async function initializeApp() {
+            dates = generateDates();
+            await loadFromCloud();
+            renderDashboard();
+        }
+
+        initializeApp();
     </script>
 </body>
 </html>
