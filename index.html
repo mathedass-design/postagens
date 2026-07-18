@@ -1270,6 +1270,83 @@
             .drive-folder-btn { min-height: 62px; }
         }
 
+        /* Botão Início e cabeçalho móvel com todos os botões visíveis */
+        .btn-home-header {
+            background: #16a34a;
+        }
+        .btn-home-header:hover { background: #15803d; }
+
+        @media (max-width: 700px) {
+            body {
+                grid-template-rows: 88px minmax(0, 1fr) !important;
+            }
+
+            .global-header {
+                height: 88px !important;
+                min-height: 88px !important;
+                padding: 5px 6px !important;
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                grid-template-rows: 25px 48px !important;
+                gap: 5px !important;
+                overflow: visible !important;
+            }
+
+            .global-header h1 {
+                width: 100% !important;
+                font-size: .78rem !important;
+                line-height: 25px !important;
+                text-align: center !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+            }
+
+            .header-actions {
+                width: 100% !important;
+                min-width: 0 !important;
+                display: grid !important;
+                grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+                gap: 3px !important;
+                margin: 0 !important;
+            }
+
+            .btn-header {
+                width: 100% !important;
+                min-width: 0 !important;
+                height: 46px !important;
+                min-height: 46px !important;
+                padding: 3px 1px !important;
+                border-radius: 7px !important;
+                font-size: clamp(.49rem, 2.4vw, .61rem) !important;
+                line-height: 1.08 !important;
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+            }
+        }
+
+        @media (max-width: 390px) {
+            .btn-header {
+                font-size: .48rem !important;
+                padding-inline: 0 !important;
+            }
+        }
+
+        @media (display-mode: standalone) and (max-width: 700px),
+               (display-mode: fullscreen) and (max-width: 700px) {
+            body {
+                grid-template-rows: calc(88px + env(safe-area-inset-top, 0px)) minmax(0, 1fr) !important;
+            }
+
+            .global-header {
+                height: calc(88px + env(safe-area-inset-top, 0px)) !important;
+                min-height: calc(88px + env(safe-area-inset-top, 0px)) !important;
+                padding-top: calc(5px + env(safe-area-inset-top, 0px)) !important;
+                grid-template-rows: 25px 48px !important;
+            }
+        }
+
 </style>
 </head>
 <body>
@@ -1277,6 +1354,7 @@
     <header class="global-header">
         <h1>Gerenciador de Mídias</h1>
         <div class="header-actions">
+            <button class="btn-header btn-home-header" onclick="showDashboard()">🏠 Início</button>
             <button class="btn-header" onclick="showDrafts()">📝 Rascunho</button>
             <button class="btn-header btn-drive-header" id="btn-drive" onclick="openDriveFolder()" disabled>📂 Drive</button>
             <button class="btn-header btn-theme" onclick="toggleTheme()">🌓 Tema</button>
