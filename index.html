@@ -77,6 +77,11 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        body.detail-open {
+            height: 100dvh;
+            overflow: hidden;
+        }
+
         button, input, label {
             touch-action: manipulation;
         }
@@ -200,9 +205,10 @@
         /* --- TELA DE DETALHES --- */
         #detail-view {
             display: none;
-            min-height: 100%;
-            height: auto;
             width: 100%;
+            height: calc(100dvh - 80px);
+            min-height: 0;
+            overflow: hidden;
             flex-direction: column;
         }
 
@@ -210,16 +216,18 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            height: 50px;
             min-height: 50px;
-            height: auto;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            margin-bottom: 10px;
+            flex-wrap: nowrap;
             min-width: 0;
         }
 
         header.detail-header h2 {
             min-width: 0;
-            overflow-wrap: anywhere;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .back-btn {
@@ -231,38 +239,40 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 1rem;
+            flex: 0 0 auto;
         }
 
         .slots-container {
+            flex: 1;
+            min-height: 0;
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            grid-auto-rows: 1fr;
-            align-items: stretch;
+            grid-template-rows: repeat(2, minmax(0, 1fr));
             gap: 15px;
             width: 100%;
-            min-width: 0;
+            overflow: hidden;
         }
 
         .slot-card {
             background: var(--bg-card);
             border-radius: 12px;
-            padding: 15px;
+            padding: 14px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            display: grid;
+            grid-template-rows: 30px minmax(86px, 1fr) 34px 52px;
+            gap: 10px;
             min-width: 0;
             width: 100%;
             height: 100%;
-            min-height: 228px;
-            overflow: visible;
+            min-height: 0;
+            overflow: hidden;
             border: 3px solid var(--border-color);
-            transition: background-color 0.25s, border-color 0.25s, transform 0.2s, box-shadow 0.2s;
+            transition: background-color 0.2s, border-color 0.2s;
         }
 
         .slot-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+            transform: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .slot-card.pending {
@@ -278,12 +288,30 @@
         .slot-card.pending .slot-header { color: var(--pending-text); }
         .slot-card.completed .slot-header { color: var(--completed-text); }
 
+        .slot-main {
+            min-height: 0;
+            display: grid;
+            grid-template-rows: 1fr auto;
+            gap: 8px;
+            overflow: hidden;
+        }
+
         .slot-card > .manual-check-wrapper {
-            margin-top: auto;
+            margin-top: 0;
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
         }
 
         .slot-card > .actions {
             margin-top: 0;
+            min-height: 52px;
+        }
+
+        .slot-card > .actions.actions-placeholder {
+            visibility: hidden;
+            pointer-events: none;
         }
 
         .slot-header {
@@ -294,14 +322,14 @@
             text-align: center;
         }
 
-        .file-upload-wrapper { margin-bottom: 10px; }
+        .file-upload-wrapper { margin-bottom: 0; min-height: 0; display: grid; grid-template-rows: 1fr auto; gap: 6px; overflow: hidden; }
         .file-upload-wrapper input[type="file"] { display: none; }
 
         .custom-file-upload {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 15px 5px;
+            padding: 8px 5px;
             border: 2px dashed var(--border-color);
             border-radius: 8px;
             cursor: pointer;
@@ -631,6 +659,95 @@
             }
         }
 
+    
+        @media (max-width: 700px) {
+            body.detail-open .container {
+                height: calc(100dvh - 50px);
+                min-height: 0;
+                padding: 8px;
+                overflow: hidden;
+            }
+
+            #detail-view {
+                height: 100%;
+                overflow: hidden;
+            }
+
+            header.detail-header {
+                height: 42px;
+                min-height: 42px;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+
+            header.detail-header h2 {
+                font-size: 1rem;
+            }
+
+            .back-btn,
+            .drive-btn {
+                padding: 8px 10px;
+                font-size: 0.78rem;
+            }
+
+            .slots-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-template-rows: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .slot-card {
+                padding: 8px;
+                border-width: 2px;
+                border-radius: 9px;
+                grid-template-rows: 24px minmax(54px, 1fr) 30px 40px;
+                gap: 5px;
+            }
+
+            .slot-header {
+                font-size: 0.92rem;
+                margin-bottom: 0;
+            }
+
+            .custom-file-upload {
+                min-height: 0;
+                padding: 5px 3px;
+                font-size: 0.72rem;
+            }
+
+            .file-name {
+                font-size: 0.64rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .status-finalizado {
+                min-height: 0;
+                padding: 5px;
+                font-size: 0.78rem;
+            }
+
+            .btn-refazer,
+            .action-btn {
+                min-height: 40px;
+                height: 40px;
+                font-size: 0.78rem;
+                padding: 5px;
+            }
+
+            .manual-check-wrapper {
+                font-size: 0.68rem;
+                line-height: 1.05;
+            }
+
+            .manual-check-wrapper input {
+                width: 17px;
+                height: 17px;
+                flex: 0 0 17px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -888,6 +1005,7 @@
 
         function showDetail(dateId, dateLabel) {
             currentDetailDate = dateId;
+            document.body.classList.add('detail-open');
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'flex';
             document.getElementById('detail-title').innerText = `Agendamentos: ${dateLabel}`;
@@ -903,15 +1021,19 @@
                 const finalizado = Boolean(slotData.isScheduled && !imageSlot.refazendo);
 
                 const areaImagem = finalizado
-                    ? `<div class="status-finalizado">✅ Finalizado</div>
-                       <button class="btn-refazer" onclick="refazerSlot('${dateId}', '${time}', '${index}')">🔄 Refazer</button>`
-                    : `<div class="file-upload-wrapper">
-                           <label for="${inputId}" class="custom-file-upload" id="label-${inputId}"
-                               ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${dateId}', '${time}', '${inputId}')">
-                               🖼️ Anexar imagem
-                           </label>
-                           <input type="file" id="${inputId}" accept="image/*" onchange="handleFileInput(event, '${dateId}', '${time}', '${inputId}')">
-                           <div class="file-name" id="file-name-${inputId}">${imageSlot.file ? escapeHtml(imageSlot.file.name) : 'Nenhuma imagem selecionada'}</div>
+                    ? `<div class="slot-main">
+                           <div class="status-finalizado">✅ Finalizado</div>
+                           <button class="btn-refazer" onclick="refazerSlot('${dateId}', '${time}', '${index}')">🔄 Refazer</button>
+                       </div>`
+                    : `<div class="slot-main">
+                           <div class="file-upload-wrapper">
+                               <label for="${inputId}" class="custom-file-upload" id="label-${inputId}"
+                                   ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${dateId}', '${time}', '${inputId}')">
+                                   🖼️ Anexar imagem
+                               </label>
+                               <input type="file" id="${inputId}" accept="image/*" onchange="handleFileInput(event, '${dateId}', '${time}', '${inputId}')">
+                               <div class="file-name" id="file-name-${inputId}">${imageSlot.file ? escapeHtml(imageSlot.file.name) : 'Nenhuma imagem selecionada'}</div>
+                           </div>
                        </div>`;
 
                 const slotHTML = `
@@ -922,9 +1044,9 @@
                             <input type="checkbox" id="manual-${dateId}-${index}" ${slotData.manual ? 'checked' : ''}>
                             <label for="manual-${dateId}-${index}">Já programado externamente</label>
                         </div>
-                        ${finalizado ? '' : `<div class="actions">
-                            <button class="action-btn btn-save" id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)">SALVAR</button>
-                        </div>`}
+                        <div class="actions ${finalizado ? 'actions-placeholder' : ''}">
+                            <button class="action-btn btn-save" ${finalizado ? 'tabindex="-1"' : `id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)"`}>SALVAR</button>
+                        </div>
                     </div>`;
                 container.innerHTML += slotHTML;
             });
@@ -940,6 +1062,7 @@
         }
 
         function showDashboard() {
+            document.body.classList.remove('detail-open');
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
             renderDashboard();
