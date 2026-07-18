@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Planejador de Posts</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="shortcut icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="application-name" content="Planejador de Posts">
+    <meta name="apple-mobile-web-app-title" content="Planejador">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         :root {
             /* Cores Fixas */
@@ -912,6 +919,164 @@
             .slot-card { padding: 7px !important; grid-template-rows: 28px minmax(0,1fr) 38px !important; gap: 4px !important; }
             .btn-save { height: 38px !important; min-height: 38px !important; }
         }
+
+
+        /* ===== AJUSTES FINAIS: NAVEGAÇÃO, DRIVE FIXO E CELULAR ===== */
+        .btn-drive-header {
+            background: #0ea5e9;
+        }
+        .btn-drive-header:hover { background: #0284c7; }
+
+        header.detail-header {
+            grid-template-columns: auto minmax(0, 1fr) !important;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                grid-template-rows: 52px minmax(0, 1fr) !important;
+            }
+
+            .global-header {
+                height: 52px !important;
+                min-height: 52px !important;
+                padding: 5px 7px !important;
+                display: grid !important;
+                grid-template-columns: minmax(0, .78fr) minmax(0, 2.22fr) !important;
+                gap: 6px !important;
+                overflow: hidden !important;
+            }
+
+            .global-header h1 {
+                min-width: 0;
+                font-size: .72rem !important;
+                line-height: 1.05;
+                white-space: normal !important;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .header-actions {
+                width: 100% !important;
+                min-width: 0;
+                display: grid !important;
+                grid-template-columns: 1fr .86fr 1.15fr !important;
+                gap: 4px !important;
+                margin: 0 !important;
+            }
+
+            .btn-header {
+                width: 100%;
+                min-width: 0;
+                height: 38px !important;
+                min-height: 38px !important;
+                padding: 3px 4px !important;
+                border-radius: 7px;
+                font-size: .58rem !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .container {
+                height: 100% !important;
+                padding: 5px !important;
+            }
+
+            .grid-dates {
+                gap: 4px !important;
+            }
+
+            .date-header {
+                font-size: clamp(.68rem, 3.2vw, .82rem) !important;
+                padding: 3px 1px !important;
+            }
+
+            .hours-grid {
+                padding: 3px !important;
+                gap: 2px !important;
+            }
+
+            .hour-badge {
+                font-size: clamp(.48rem, 2.3vw, .61rem) !important;
+                line-height: 1;
+            }
+
+            #detail-view {
+                grid-template-rows: 40px minmax(0, 1fr) !important;
+            }
+
+            header.detail-header {
+                height: 40px !important;
+                min-height: 40px !important;
+                grid-template-columns: auto minmax(0, 1fr) !important;
+                gap: 5px !important;
+                margin-bottom: 4px !important;
+            }
+
+            .back-btn {
+                height: 34px !important;
+                min-height: 34px !important;
+                padding: 4px 7px !important;
+                font-size: .65rem !important;
+            }
+
+            header.detail-header h2 {
+                font-size: clamp(.72rem, 3.5vw, .9rem) !important;
+                text-align: center;
+            }
+
+            .slots-container {
+                gap: 4px !important;
+            }
+
+            .slot-card {
+                padding: 5px !important;
+                grid-template-rows: 26px minmax(0, 1fr) 34px !important;
+                gap: 3px !important;
+                border-radius: 7px !important;
+            }
+
+            .slot-header {
+                font-size: clamp(.64rem, 3vw, .78rem) !important;
+            }
+
+            .feito-toggle label {
+                min-width: 41px !important;
+                height: 22px !important;
+                padding: 0 4px !important;
+                font-size: .52rem !important;
+            }
+
+            .custom-file-upload {
+                font-size: clamp(.52rem, 2.5vw, .65rem) !important;
+                padding: 2px !important;
+            }
+
+            .file-name {
+                font-size: .49rem !important;
+            }
+
+            .status-finalizado {
+                font-size: .66rem !important;
+                padding: 3px !important;
+            }
+
+            .btn-save {
+                height: 34px !important;
+                min-height: 34px !important;
+                font-size: .65rem !important;
+            }
+        }
+
+        @media (max-width: 390px) {
+            .global-header {
+                grid-template-columns: .7fr 2.3fr !important;
+            }
+            .global-header h1 { font-size: .64rem !important; }
+            .btn-header { font-size: .53rem !important; }
+            .slot-card { padding: 4px !important; }
+        }
+
 </style>
 </head>
 <body>
@@ -919,7 +1084,8 @@
     <header class="global-header">
         <h1>Gerenciador de Mídias</h1>
         <div class="header-actions">
-            <button class="btn-header btn-theme" onclick="toggleTheme()">🌓 Tema Escuro</button>
+            <button class="btn-header btn-drive-header" id="btn-drive" onclick="openDriveFolder()" disabled>📂 Drive</button>
+            <button class="btn-header btn-theme" onclick="toggleTheme()">🌓 Tema</button>
             <button class="btn-header" onclick="openReportModal()">📊 Relatório</button>
         </div>
     </header>
@@ -933,7 +1099,6 @@
             <header class="detail-header">
                 <button class="back-btn" onclick="showDashboard()">⬅ Voltar</button>
                 <h2 id="detail-title">Detalhes do Dia</h2>
-                <button class="btn-folder" id="btn-drive" onclick="openDriveFolder()" disabled>📂 Abrir Drive</button>
             </header>
             <div class="slots-container" id="slots-container"></div>
         </div>
@@ -1231,6 +1396,7 @@
         }
 
         function showDashboard() {
+            currentDetailDate = '';
             document.body.classList.remove('detail-open');
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
@@ -1382,13 +1548,14 @@
                     try {
                         await loadFromCloud();
                         renderDashboard();
-                        if (currentDetailDate === dateId) showDetail(dateId, dates.find(d => d.id === dateId)?.label || dateId);
+                        if (currentDetailDate === dateId && document.body.classList.contains('detail-open')) {
+                            showDetail(dateId, dates.find(d => d.id === dateId)?.label || dateId);
+                        }
                     } catch (syncError) {
                         console.warn('O envio foi feito, mas a atualização automática falhou.', syncError);
                     }
                 }, imageSlot.file ? 4500 : 2000);
 
-                setTimeout(() => showDetail(dateId, dates.find(d => d.id === dateId)?.label || dateId), 900);
             } catch (error) {
                 console.error(error);
                 btn.innerText = '❌ Erro ao salvar';
@@ -1403,7 +1570,7 @@
             const btn = document.getElementById('btn-drive');
             if (!btn) return;
             btn.disabled = !driveFolderUrl;
-            btn.innerText = driveFolderUrl ? '📂 Abrir Drive' : '📂 Preparando pasta do Drive...';
+            btn.innerText = driveFolderUrl ? '📂 Drive' : '📂 Aguarde';
         }
 
         function openDriveFolder() {
