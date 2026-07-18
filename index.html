@@ -771,7 +771,148 @@
             }
         }
 
-    </style>
+    
+        /* ===== LAYOUT FINAL: SEM ROLAGEM E SEM DEFORMAÇÃO ===== */
+        html, body {
+            width: 100%;
+            height: 100%;
+            min-height: 100%;
+            overflow: hidden !important;
+            overscroll-behavior: none;
+        }
+
+        body {
+            display: grid;
+            grid-template-rows: 50px minmax(0, 1fr);
+        }
+
+        .global-header {
+            height: 50px !important;
+            min-height: 50px !important;
+            flex-wrap: nowrap !important;
+        }
+
+        .container {
+            height: 100%;
+            min-height: 0 !important;
+            overflow: hidden !important;
+            padding: 10px 15px !important;
+        }
+
+        #dashboard-view, #detail-view {
+            height: 100%;
+            min-height: 0;
+            overflow: hidden !important;
+        }
+
+        .grid-dates {
+            height: 100%;
+            min-height: 0 !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+            grid-auto-rows: unset !important;
+            gap: 10px !important;
+            overflow: hidden !important;
+        }
+
+        .date-card { height: 100%; min-height: 0; }
+        .date-header { padding: 6px; font-size: clamp(.9rem, 1.7vw, 1.25rem); }
+        .hours-grid { gap: 5px; padding: 7px; min-height: 0; }
+        .hour-badge { font-size: clamp(.68rem, 1.15vw, .95rem); min-height: 0; }
+
+        #detail-view {
+            height: 100% !important;
+            display: none;
+            grid-template-rows: 48px minmax(0, 1fr);
+        }
+
+        #detail-view[style*="display: flex"] { display: grid !important; }
+
+        header.detail-header {
+            height: 48px !important;
+            min-height: 48px !important;
+            margin: 0 0 8px !important;
+        }
+
+        .slots-container {
+            height: 100%;
+            min-height: 0;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+            grid-auto-rows: unset !important;
+            gap: 12px !important;
+            overflow: hidden !important;
+        }
+
+        .slot-card {
+            height: 100% !important;
+            min-height: 0 !important;
+            padding: 12px !important;
+            grid-template-rows: 34px minmax(0, 1fr) 48px !important;
+            gap: 8px !important;
+            overflow: hidden !important;
+        }
+
+        .slot-main, .file-upload-wrapper { min-height: 0; overflow: hidden !important; }
+        .custom-file-upload, .status-finalizado { height: 100%; min-height: 0 !important; }
+        .btn-save { min-height: 48px !important; height: 48px !important; padding: 8px 12px !important; }
+
+        @media (max-width: 700px) {
+            body { grid-template-rows: 46px minmax(0, 1fr); }
+            .global-header {
+                height: 46px !important;
+                min-height: 46px !important;
+                padding: 0 8px !important;
+            }
+            .global-header h1 { font-size: .8rem !important; }
+            .btn-header { min-height: 32px !important; padding: 5px 7px !important; font-size: .62rem !important; }
+            .container { padding: 6px !important; }
+
+            .grid-dates {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+                gap: 5px !important;
+            }
+            .date-card { border-radius: 7px; }
+            .date-header { padding: 4px 2px !important; font-size: .72rem !important; }
+            .hours-grid { gap: 3px !important; padding: 4px !important; }
+            .hour-badge { font-size: .53rem !important; border-radius: 4px; }
+
+            #detail-view { grid-template-rows: 42px minmax(0, 1fr); }
+            header.detail-header {
+                height: 42px !important; min-height: 42px !important; margin-bottom: 5px !important;
+                display: grid !important; grid-template-columns: auto minmax(0,1fr) auto !important; gap: 5px !important;
+            }
+            .back-btn, .btn-folder { min-height: 34px !important; height: 34px !important; padding: 5px 8px !important; font-size: .68rem !important; width: auto !important; grid-column: auto !important; }
+            header.detail-header h2 { font-size: .83rem !important; text-align: center; }
+
+            .slots-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+                gap: 5px !important;
+            }
+            .slot-card {
+                padding: 6px !important; border-width: 2px !important; border-radius: 8px !important;
+                grid-template-rows: 28px minmax(0, 1fr) 36px !important; gap: 4px !important;
+            }
+            .slot-header { font-size: .76rem !important; }
+            .feito-toggle label { min-width: 45px !important; height: 24px !important; padding: 0 5px !important; font-size: .58rem !important; border-width: 1px !important; }
+            .custom-file-upload { padding: 3px !important; font-size: .64rem !important; border-width: 1px !important; }
+            .file-name { font-size: .54rem !important; line-height: 1.05; }
+            .status-finalizado { padding: 4px !important; font-size: .72rem !important; }
+            .btn-save { height: 36px !important; min-height: 36px !important; padding: 4px !important; font-size: .72rem !important; }
+        }
+
+        @media (max-height: 620px) {
+            .global-header { height: 42px !important; min-height: 42px !important; }
+            body { grid-template-rows: 42px minmax(0, 1fr); }
+            .container { padding: 5px 8px !important; }
+            header.detail-header { height: 38px !important; min-height: 38px !important; margin-bottom: 4px !important; }
+            #detail-view { grid-template-rows: 38px minmax(0, 1fr); }
+            .slot-card { padding: 7px !important; grid-template-rows: 28px minmax(0,1fr) 38px !important; gap: 4px !important; }
+            .btn-save { height: 38px !important; min-height: 38px !important; }
+        }
+</style>
 </head>
 <body>
 
@@ -1067,7 +1208,7 @@
                         <div class="slot-header">
                             <span class="slot-time">⏰ ${time}</span>
                             <span class="feito-toggle">
-                                <input type="checkbox" id="manual-${dateId}-${index}" ${slotData.manual ? 'checked' : ''}>
+                                <input type="checkbox" id="manual-${dateId}-${index}" ${slotData.manual ? 'checked' : ''} onchange="handleFeitoChange(this, '${dateId}', '${time}', '${index}')">
                                 <label for="manual-${dateId}-${index}">FEITO</label>
                             </span>
                         </div>
@@ -1158,6 +1299,16 @@
             } catch (error) {
                 console.warn('O horário foi redefinido neste aparelho, mas a nuvem não respondeu.', error);
             }
+        }
+
+        async function handleFeitoChange(checkbox, dateId, time, index) {
+            if (!checkbox.checked) return;
+
+            const btn = document.getElementById(`btn-save-${dateId}-${index}`);
+            if (!btn) return;
+
+            checkbox.disabled = true;
+            await saveSlot(dateId, time, index, { currentTarget: btn });
         }
 
         function fileToDataUrl(file) {
