@@ -1126,6 +1126,7 @@
             overflow: hidden;
         }
         .draft-panel { display: flex; flex-direction: column; gap: 12px; }
+        .draft-quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .draft-panel h2, .draft-list-panel h2 { color: var(--text-main); font-size: 1.05rem; }
         .draft-textarea {
             width: 100%;
@@ -1182,7 +1183,23 @@
             flex-direction: column;
             gap: 10px;
             min-width: 0;
+            position: relative;
         }
+        .draft-delete {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 28px;
+            height: 28px;
+            border: 0;
+            border-radius: 50%;
+            background: var(--danger);
+            color: white;
+            font-weight: 900;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .draft-delete:hover { background: var(--danger-hover); }
         .draft-card-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .9rem; line-height: 1.35; }
         .draft-copy {
             border: 0;
@@ -1208,12 +1225,49 @@
             .draft-panel h2, .draft-list-panel h2 { font-size: .82rem; }
             .draft-textarea { min-height: 72px; font-size: .78rem; padding: 8px; }
             .draft-action { min-height: 34px; padding: 6px; font-size: .72rem; }
+            .draft-quick-actions { grid-template-columns: 1fr 1fr; gap: 6px; }
             .draft-file-label { padding: 8px 5px; font-size: .72rem; }
             .draft-file-name { font-size: .65rem; }
             .draft-cards { grid-template-columns: 1fr; gap: 6px; }
             .draft-card { padding: 8px; gap: 6px; }
             .draft-card-text { font-size: .72rem; }
             .draft-copy { min-height: 30px; font-size: .68rem; }
+        }
+
+        .draft-paste-hint {
+            margin-top: -4px;
+            color: var(--text-muted);
+            font-size: .72rem;
+            line-height: 1.25;
+        }
+
+        .drive-folder-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .drive-folder-btn {
+            border: 0;
+            border-radius: 10px;
+            min-height: 82px;
+            padding: 12px 8px;
+            background: var(--primary);
+            color: white;
+            font-weight: 800;
+            font-size: .9rem;
+            cursor: pointer;
+        }
+
+        .drive-folder-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 480px) {
+            .drive-folder-grid { grid-template-columns: 1fr; }
+            .drive-folder-btn { min-height: 62px; }
         }
 
 </style>
@@ -1247,10 +1301,15 @@
             <div class="draft-shell">
                 <section class="draft-panel">
                     <h2>📝 Novo rascunho</h2>
-                    <textarea id="draft-text" class="draft-textarea" placeholder="Digite seu texto..."></textarea>
-                    <button id="btn-save-draft" class="draft-action" onclick="saveDraftText()">SALVAR TEXTO</button>
-                    <label class="draft-file-label">
-                        🖼️ Adicionar imagem aos Memes
+                    <textarea id="draft-text" class="draft-textarea" placeholder="Digite ou cole texto ou imagem..." onpaste="handleDraftTextareaPaste(event)"></textarea>
+                    <div class="draft-paste-hint">Você também pode copiar uma imagem e colar diretamente nesta caixa.</div>
+                    <div class="draft-quick-actions">
+                        <button id="btn-paste-draft" class="draft-action secondary" onclick="pasteDraftContent()">📋 COLAR</button>
+                        <button id="btn-save-draft" class="draft-action" onclick="saveDraftText()">SALVAR TEXTO</button>
+                    </div>
+                    <label class="draft-file-label" id="draft-drop-zone"
+                        ondragover="handleDraftDragOver(event)" ondragleave="handleDraftDragLeave(event)" ondrop="handleDraftDrop(event)">
+                        🖼️ Clique ou arraste uma imagem aos Memes
                         <input id="draft-image" type="file" accept="image/*" onchange="updateDraftImageName()">
                     </label>
                     <div class="draft-file-name" id="draft-image-name">Nenhuma imagem selecionada</div>
@@ -1261,6 +1320,18 @@
                     <div id="draft-cards" class="draft-cards"></div>
                 </section>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PASTAS DO DRIVE -->
+    <div id="drive-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">Escolha uma pasta</div>
+            <div class="drive-folder-grid">
+                <button id="btn-folder-postagens" class="drive-folder-btn" onclick="openSelectedDriveFolder('postagens')">📁 Postagens</button>
+                <button id="btn-folder-memes" class="drive-folder-btn" onclick="openSelectedDriveFolder('memes')">🖼️ Memes</button>
+            </div>
+            <button class="modal-btn modal-close" onclick="closeDriveModal()">Cancelar</button>
         </div>
     </div>
 
@@ -1755,9 +1826,20 @@
             drafts.slice().reverse().forEach(item => {
                 const card = document.createElement('article');
                 card.className = 'draft-card';
+
+                const del = document.createElement('button');
+                del.className = 'draft-delete';
+                del.type = 'button';
+                del.title = 'Apagar rascunho';
+                del.setAttribute('aria-label', 'Apagar rascunho');
+                del.textContent = '×';
+                del.onclick = () => deleteDraft(item.id, card);
+
                 const text = document.createElement('div');
                 text.className = 'draft-card-text';
+                text.style.paddingRight = '28px';
                 text.textContent = item.texto || '';
+
                 const copy = document.createElement('button');
                 copy.className = 'draft-copy';
                 copy.textContent = 'COPIAR';
@@ -1776,17 +1858,38 @@
                     }
                     setTimeout(() => copy.textContent = 'COPIAR', 1200);
                 };
-                card.append(text, copy);
+                card.append(del, text, copy);
                 box.appendChild(card);
             });
         }
 
-        async function saveDraftText() {
+        async function deleteDraft(id, card) {
+            if (!confirm('Apagar este rascunho? Ele também será removido da planilha.')) return;
+            const original = card.style.opacity;
+            card.style.opacity = '.45';
+            card.style.pointerEvents = 'none';
+            try {
+                await fetch(API_URL, {
+                    method: 'POST', mode: 'no-cors', redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'excluir_rascunho', id: String(id) })
+                });
+                drafts = drafts.filter(item => String(item.id) !== String(id));
+                renderDrafts();
+            } catch (error) {
+                console.error(error);
+                card.style.opacity = original;
+                card.style.pointerEvents = '';
+                alert('Não foi possível apagar o rascunho.');
+            }
+        }
+
+        async function saveDraftText(textOverride = '') {
             const input = document.getElementById('draft-text');
             const btn = document.getElementById('btn-save-draft');
-            const texto = input.value.trim();
+            const texto = String(textOverride || input.value).trim();
             if (!texto) {
-                alert('Digite um texto para salvar.');
+                alert('Digite ou cole um texto para salvar.');
                 return;
             }
             btn.disabled = true;
@@ -1813,27 +1916,93 @@
             }
         }
 
+        async function handleDraftTextareaPaste(event) {
+            const clipboard = event.clipboardData;
+            if (!clipboard || !clipboard.items) return;
+
+            const imageItem = Array.from(clipboard.items).find(item => item.type && item.type.startsWith('image/'));
+            if (!imageItem) return;
+
+            event.preventDefault();
+            const fileBlob = imageItem.getAsFile();
+            if (!fileBlob) {
+                alert('A imagem copiada não pôde ser lida pelo navegador.');
+                return;
+            }
+
+            const extension = (fileBlob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+            const file = new File([fileBlob], `meme-colado-${Date.now()}.${extension}`, { type: fileBlob.type });
+            const btn = document.getElementById('btn-upload-meme');
+            await uploadMemeFile(file, btn);
+        }
+
+        async function pasteDraftContent() {
+            const btn = document.getElementById('btn-paste-draft');
+            btn.disabled = true;
+            btn.textContent = 'LENDO...';
+            try {
+                if (navigator.clipboard && navigator.clipboard.read) {
+                    const items = await navigator.clipboard.read();
+                    for (const item of items) {
+                        const imageType = item.types.find(type => type.startsWith('image/'));
+                        if (imageType) {
+                            const blob = await item.getType(imageType);
+                            const ext = imageType.split('/')[1] || 'png';
+                            const file = new File([blob], `meme-colado-${Date.now()}.${ext}`, { type: imageType });
+                            await uploadMemeFile(file, btn);
+                            return;
+                        }
+                    }
+                }
+
+                const texto = await navigator.clipboard.readText();
+                if (!texto.trim()) throw new Error('A área de transferência está vazia.');
+                document.getElementById('draft-text').value = texto;
+                await saveDraftText(texto);
+                btn.textContent = 'SALVO!';
+            } catch (error) {
+                console.error(error);
+                alert('Não foi possível colar automaticamente. No celular, permita o acesso à área de transferência ou cole diretamente no campo.');
+                btn.textContent = '📋 COLAR';
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => { if (!btn.disabled) btn.textContent = '📋 COLAR'; }, 1200);
+            }
+        }
+
         function updateDraftImageName() {
             const file = document.getElementById('draft-image').files[0];
             document.getElementById('draft-image-name').textContent = file ? file.name : 'Nenhuma imagem selecionada';
         }
 
-        async function uploadMemeImage() {
-            const input = document.getElementById('draft-image');
-            const btn = document.getElementById('btn-upload-meme');
-            const file = input.files[0];
-            if (!file) {
-                alert('Selecione uma imagem.');
-                return;
-            }
-            if (!file.type.startsWith('image/')) {
-                alert('Escolha um arquivo de imagem válido.');
+        function handleDraftDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('drag-active');
+        }
+
+        function handleDraftDragLeave(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-active');
+        }
+
+        async function handleDraftDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-active');
+            const file = event.dataTransfer.files && event.dataTransfer.files[0];
+            if (!file) return;
+            await uploadMemeFile(file, document.getElementById('btn-upload-meme'));
+        }
+
+        async function uploadMemeFile(file, btn) {
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Escolha uma imagem válida.');
                 return;
             }
             if (file.size > 20 * 1024 * 1024) {
                 alert('A imagem ultrapassa 20 MB.');
                 return;
             }
+            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'ENVIANDO...';
             try {
@@ -1848,33 +2017,62 @@
                         tipo_imagem: file.type
                     })
                 });
+                const input = document.getElementById('draft-image');
                 input.value = '';
                 updateDraftImageName();
                 btn.textContent = 'ENVIADA!';
-                setTimeout(() => btn.textContent = 'ENVIAR IMAGEM', 1200);
+                setTimeout(() => btn.textContent = originalText, 1200);
             } catch (error) {
                 console.error(error);
                 btn.textContent = 'ERRO';
                 alert('Não foi possível enviar a imagem.');
-                setTimeout(() => btn.textContent = 'ENVIAR IMAGEM', 1200);
+                setTimeout(() => btn.textContent = originalText, 1200);
             } finally {
                 btn.disabled = false;
             }
         }
 
+        async function uploadMemeImage() {
+            const input = document.getElementById('draft-image');
+            const file = input.files[0];
+            if (!file) {
+                alert('Selecione uma imagem.');
+                return;
+            }
+            await uploadMemeFile(file, document.getElementById('btn-upload-meme'));
+        }
+
         function updateDriveButton() {
             const btn = document.getElementById('btn-drive');
             if (!btn) return;
-            btn.disabled = !driveFolderUrl;
-            btn.innerText = driveFolderUrl ? '📂 Drive' : '📂 Aguarde';
+            const ready = Boolean(driveFolderUrl || memesFolderUrl);
+            btn.disabled = !ready;
+            btn.innerText = ready ? '📂 Drive' : '📂 Aguarde';
         }
 
         function openDriveFolder() {
-            if (!driveFolderUrl) {
-                alert('A pasta do Drive ainda está sendo preparada. Aguarde a sincronização e tente novamente.');
+            if (!driveFolderUrl && !memesFolderUrl) {
+                alert('As pastas do Drive ainda estão sendo preparadas. Aguarde a sincronização e tente novamente.');
                 return;
             }
-            window.open(driveFolderUrl, '_blank', 'noopener,noreferrer');
+            const postagensBtn = document.getElementById('btn-folder-postagens');
+            const memesBtn = document.getElementById('btn-folder-memes');
+            if (postagensBtn) postagensBtn.disabled = !driveFolderUrl;
+            if (memesBtn) memesBtn.disabled = !memesFolderUrl;
+            document.getElementById('drive-modal').style.display = 'flex';
+        }
+
+        function closeDriveModal() {
+            document.getElementById('drive-modal').style.display = 'none';
+        }
+
+        function openSelectedDriveFolder(folder) {
+            const url = folder === 'memes' ? memesFolderUrl : driveFolderUrl;
+            if (!url) {
+                alert('Esta pasta ainda não está disponível.');
+                return;
+            }
+            window.open(url, '_blank', 'noopener,noreferrer');
         }
 
         function openReportModal() {
