@@ -1,9 +1,9 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejador de Posts - Tela Cheia</title>
+    <title>Planejador de Posts</title>
     <style>
         :root {
             /* Cores Fixas */
@@ -46,9 +46,10 @@
         body {
             background-color: var(--bg-main);
             color: var(--text-main);
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
+            min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -94,24 +95,32 @@
         /* --- CONTAINER PRINCIPAL --- */
         .container {
             width: 100%;
-            height: calc(100vh - 50px);
+            min-height: calc(100dvh - 50px);
             padding: 15px;
+            display: flex;
+            flex-direction: column;
         }
 
         /* --- DASHBOARD --- */
-        #dashboard-view { height: 100%; width: 100%; }
+        #dashboard-view {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+        }
 
         .grid-dates {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-rows: repeat(3, minmax(0, 1fr));
             gap: 15px;
-            height: 100%;
+            min-height: calc(100dvh - 80px);
             width: 100%;
         }
 
         .date-card {
             background: var(--bg-card);
+            min-width: 0;
+            min-height: 0;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -163,7 +172,8 @@
         /* --- TELA DE DETALHES --- */
         #detail-view {
             display: none;
-            height: 100%;
+            min-height: 100%;
+            height: auto;
             width: 100%;
             flex-direction: column;
         }
@@ -172,8 +182,16 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            height: 50px;
+            min-height: 50px;
+            height: auto;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        header.detail-header h2 {
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
 
         .back-btn {
@@ -189,10 +207,12 @@
 
         .slots-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-auto-rows: auto;
+            align-items: stretch;
             gap: 15px;
-            flex: 1;
+            width: 100%;
+            min-width: 0;
         }
 
         .slot-card {
@@ -202,6 +222,10 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+            height: 100%;
+            overflow: hidden;
             border: 2px solid var(--border-color);
             transition: background-color 0.3s, border-color 0.3s;
         }
@@ -238,47 +262,39 @@
             color: var(--primary);
         }
 
-        .preview-container {
-            position: relative;
-            width: 100%;
+        .file-name {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        .status-finalizado {
             display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .image-preview {
-            width: 100%;
-            height: 65px;
-            object-fit: cover;
+            align-items: center;
+            justify-content: center;
+            min-height: 58px;
+            padding: 12px;
             border-radius: 8px;
-        }
-
-        .btn-remove-img {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--success);
+            font-weight: 800;
+            font-size: 1rem;
             text-align: center;
         }
 
-        .btn-remove-img:hover { background: var(--danger-hover); }
-
-        textarea {
+        .btn-refazer {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: 700;
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            resize: none;
-            flex: 1;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            background: var(--bg-card);
-            color: var(--text-main);
         }
+
+        .btn-refazer:hover { background: var(--primary-hover); }
 
         /* Checkbox de Marcação Manual */
         .manual-check-wrapper {
@@ -304,7 +320,7 @@
 
         .actions {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 8px;
         }
 
@@ -318,9 +334,7 @@
             transition: background-color 0.2s;
         }
 
-        .btn-download { background: var(--primary); color: white; }
-        .btn-download:hover { background: var(--primary-hover); }
-        .btn-save { background: var(--success); color: white; width: 100%; grid-column: span 2; padding: 10px; font-size: 0.95rem;}
+        .btn-save { background: var(--success); color: white; width: 100%; grid-column: span 1; padding: 10px; font-size: 0.95rem;}
 
         /* --- MODAL DE RELATÓRIO --- */
         .modal-overlay {
@@ -366,6 +380,39 @@
         .modal-close { margin-top: 20px; background: transparent; color: var(--danger); border: 1px solid var(--danger); }
         .date-selector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
+        .btn-folder {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-left: auto;
+        }
+        .btn-folder:disabled { opacity: .55; cursor: not-allowed; }
+
+        @media (max-width: 1050px) {
+            body { overflow-y: auto; }
+            .container { padding: 10px; }
+            .grid-dates { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: minmax(180px, auto); min-height: auto; }
+            .slots-container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 600px) {
+            .global-header { height: auto; min-height: 50px; padding: 8px 10px; gap: 8px; }
+            .header-actions { gap: 6px; }
+            .btn-header { padding: 7px 9px; font-size: .75rem; }
+            .container { min-height: calc(100vh - 58px); }
+            .grid-dates { grid-template-columns: 1fr; grid-auto-rows: minmax(180px, auto); min-height: auto; }
+            .slots-container { grid-template-columns: 1fr; }
+            .slot-card { min-height: 0; height: auto; }
+            .global-header h1 { font-size: .95rem; }
+            header.detail-header h2 { width: 100%; order: 3; font-size: 1.2rem; }
+            .btn-folder { width: 100%; margin-left: 0; }
+        }
+
     </style>
 </head>
 <body>
@@ -387,6 +434,7 @@
             <header class="detail-header">
                 <button class="back-btn" onclick="showDashboard()">⬅ Voltar</button>
                 <h2 id="detail-title">Detalhes do Dia</h2>
+                <button class="btn-folder" id="btn-drive" onclick="openDriveFolder()" disabled>📂 Abrir Drive</button>
             </header>
             <div class="slots-container" id="slots-container"></div>
         </div>
@@ -425,6 +473,8 @@
         let db = {};
         let tempImages = {};
         let dates = [];
+        let driveFolderUrl = '';
+        let currentDetailDate = '';
 
         function toggleTheme() {
             const body = document.body;
@@ -471,24 +521,67 @@
                         manual: false,
                         imageUrl: '',
                         originalUrl: '',
-                        downloadUrl: ''
+                        folderUrl: ''
                     };
                     tempImages[dateId][time] = tempImages[dateId][time] || {
                         file: null,
-                        previewUrl: db[dateId][time].imageUrl || '',
                         originalUrl: db[dateId][time].originalUrl || '',
-                        downloadUrl: db[dateId][time].downloadUrl || '',
-                        removeRequested: false
+                        folderUrl: db[dateId][time].folderUrl || '',
+                        refazendo: false
                     };
                 });
             }
             return generated;
         }
 
-        async function loadFromCloud() {
+        function saveLocalCache() {
+            try {
+                localStorage.setItem('plannerCloudCacheV4', JSON.stringify({
+                    savedAt: Date.now(),
+                    db,
+                    driveFolderUrl
+                }));
+            } catch (error) {
+                console.warn('Não foi possível guardar o cache local.', error);
+            }
+        }
+
+        function loadLocalCache() {
+            try {
+                const cached = JSON.parse(localStorage.getItem('plannerCloudCacheV4') || 'null');
+                if (!cached || !cached.db) return false;
+
+                Object.keys(cached.db).forEach(dateId => {
+                    if (!db[dateId]) return;
+                    TIMES.forEach(time => {
+                        if (!cached.db[dateId]?.[time]) return;
+                        db[dateId][time] = {
+                            ...db[dateId][time],
+                            ...cached.db[dateId][time],
+                            imageUrl: ''
+                        };
+                        tempImages[dateId][time] = {
+                            file: null,
+                            originalUrl: db[dateId][time].originalUrl || '',
+                            folderUrl: db[dateId][time].folderUrl || '',
+                            refazendo: false
+                        };
+                    });
+                });
+
+                driveFolderUrl = cached.driveFolderUrl || '';
+                updateDriveButton();
+                return true;
+            } catch (error) {
+                console.warn('Cache local inválido.', error);
+                return false;
+            }
+        }
+
+        async function loadFromCloud({ silent = false } = {}) {
             const title = document.querySelector('.global-header h1');
-            const originalTitle = title.innerText;
-            title.innerText = 'Carregando dados...';
+            const originalTitle = 'Gerenciador de Mídias';
+            if (!silent) title.innerText = 'Sincronizando...';
 
             try {
                 const response = await fetch(`${API_URL}?t=${Date.now()}`, {
@@ -501,6 +594,9 @@
 
                 const result = await response.json();
                 if (!result.sucesso) throw new Error(result.mensagem || 'Não foi possível carregar os dados.');
+
+                driveFolderUrl = result.pasta_drive || driveFolderUrl || '';
+                updateDriveButton();
 
                 (result.postagens || []).forEach(post => {
                     const dateId = normalizeDateId(post.data);
@@ -508,875 +604,35 @@
                     if (!db[dateId] || !db[dateId][time]) return;
 
                     const originalUrl = post.link_imagem || '';
-                    const previewUrl = post.link_visualizacao || originalUrl;
-                    const downloadUrl = post.link_download || originalUrl;
+                    const folderUrl = driveFolderUrl;
 
                     db[dateId][time] = {
-                        caption: post.legenda || '',
-                        isScheduled: Boolean(post.programado),
-                        manual: Boolean(post.manual),
-                        imageUrl: previewUrl,
-                        originalUrl,
-                        downloadUrl
-                    };
-
-                    tempImages[dateId][time] = {
-                        file: null,
-                        previewUrl,
-                        originalUrl,
-                        downloadUrl,
-                        removeRequested: false
-                    };
-                });
-            } catch (error) {
-                console.error(error);
-                alert('Não foi possível carregar os dados da planilha. Verifique se o aplicativo do Apps Script foi publicado para “Qualquer pessoa”.');
-            } finally {
-                title.innerText = originalTitle;
-            }
-        }
-
-        function renderDashboard() {
-            const grid = document.getElementById('grid-dates');
-            grid.innerHTML = '';
-
-            dates.forEach((dateObj, index) => {
-                const card = document.createElement('div');
-                card.className = 'date-card';
-                card.onclick = () => showDetail(dateObj.id, dateObj.label);
-
-                const header = document.createElement('div');
-                header.className = 'date-header';
-                header.style.background = cardColors[index];
-                header.innerText = dateObj.label;
-
-                const hoursGrid = document.createElement('div');
-                hoursGrid.className = 'hours-grid';
-
-                TIMES.forEach(time => {
-                    const badge = document.createElement('div');
-                    badge.className = `hour-badge ${db[dateObj.id][time].isScheduled ? 'scheduled' : ''}`;
-                    badge.innerText = time;
-                    hoursGrid.appendChild(badge);
-                });
-
-                card.appendChild(header);
-                card.appendChild(hoursGrid);
-                grid.appendChild(card);
-            });
-        }
-
-        function showDetail(dateId, dateLabel) {
-            document.getElementById('dashboard-view').style.display = 'none';
-            document.getElementById('detail-view').style.display = 'flex';
-            document.getElementById('detail-title').innerText = `Agendamentos: ${dateLabel}`;
-
-            const container = document.getElementById('slots-container');
-            container.innerHTML = '';
-
-            TIMES.forEach((time, index) => {
-                const slotData = db[dateId][time];
-                const imageSlot = tempImages[dateId][time];
-                const inputId = `file-${dateId}-${index}`;
-                const borderColor = slotData.isScheduled ? 'var(--success)' : 'transparent';
-
-                const slotHTML = `
-                    <div class="slot-card" style="border-color: ${borderColor}">
-                        <div class="slot-header">⏰ ${time}</div>
-                        <div class="file-upload-wrapper">
-                            <label for="${inputId}" class="custom-file-upload" id="label-${inputId}"
-                                style="${imageSlot.previewUrl ? 'display:none;' : 'display:flex;'}"
-                                ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${dateId}', '${time}', '${inputId}')">
-                                🖼️ Clique ou Arraste a Imagem
-                            </label>
-                            <input type="file" id="${inputId}" accept="image/*" onchange="handleFileInput(event, '${dateId}', '${time}', '${inputId}')">
-                            <div class="preview-container" id="preview-container-${inputId}" style="${imageSlot.previewUrl ? 'display:flex;' : 'display:none;'}">
-                                <img id="preview-${inputId}" class="image-preview" src="${imageSlot.previewUrl || ''}" loading="lazy" decoding="async" alt="Prévia da imagem">
-                                <button class="btn-remove-img" onclick="removeImage('${dateId}', '${time}', '${inputId}')">🗑️ Trocar/Apagar</button>
-                            </div>
-                        </div>
-                        <textarea id="caption-${dateId}-${index}" placeholder="Digite a legenda...">${escapeHtml(slotData.caption || '')}</textarea>
-                        <div class="manual-check-wrapper">
-                            <input type="checkbox" id="manual-${dateId}-${index}" ${slotData.manual ? 'checked' : ''}>
-                            <label for="manual-${dateId}-${index}">Já programado externamente</label>
-                        </div>
-                        <div class="actions">
-                            <button class="action-btn btn-download" onclick="downloadOriginalImage('${dateId}', '${time}')">⬇️ Baixar Imagem</button>
-                            <button class="action-btn btn-save" id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)">☁️ Salvar na nuvem</button>
-                        </div>
-                    </div>`;
-                container.innerHTML += slotHTML;
-            });
-        }
-
-        function escapeHtml(text) {
-            return String(text)
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#039;');
-        }
-
-        function showDashboard() {
-            document.getElementById('detail-view').style.display = 'none';
-            document.getElementById('dashboard-view').style.display = 'block';
-            renderDashboard();
-        }
-
-        function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-active'); }
-        function handleDragLeave(e) { e.preventDefault(); e.currentTarget.classList.remove('drag-active'); }
-        function handleDrop(e, dateId, time, inputId) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-active');
-            if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0], dateId, time, inputId);
-        }
-        function handleFileInput(e, dateId, time, inputId) {
-            if (e.target.files.length > 0) processFile(e.target.files[0], dateId, time, inputId);
-        }
-
-        function processFile(file, dateId, time, inputId) {
-            if (!file || !file.type.startsWith('image/')) {
-                alert('Escolha um arquivo de imagem válido.');
-                return;
-            }
-
-            if (file.size > 20 * 1024 * 1024) {
-                alert('A imagem ultrapassa 20 MB. Escolha um arquivo menor para conseguir enviar pelo Apps Script.');
-                return;
-            }
-
-            const imageUrl = URL.createObjectURL(file);
-            tempImages[dateId][time] = { file, previewUrl: imageUrl, originalUrl: '', downloadUrl: '', removeRequested: false };
-            document.getElementById(`label-${inputId}`).style.display = 'none';
-            document.getElementById(`preview-${inputId}`).src = imageUrl;
-            document.getElementById(`preview-container-${inputId}`).style.display = 'flex';
-        }
-
-        function removeImage(dateId, time, inputId) {
-            const current = tempImages[dateId][time];
-            if (current.file && current.previewUrl) URL.revokeObjectURL(current.previewUrl);
-            tempImages[dateId][time] = { file: null, previewUrl: '', originalUrl: '', downloadUrl: '', removeRequested: true };
-            document.getElementById(inputId).value = '';
-            document.getElementById(`preview-container-${inputId}`).style.display = 'none';
-            document.getElementById(`label-${inputId}`).style.display = 'flex';
-        }
-
-        function fileToDataUrl(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function saveSlot(dateId, time, index, event) {
-            const caption = document.getElementById(`caption-${dateId}-${index}`).value;
-            const isManual = document.getElementById(`manual-${dateId}-${index}`).checked;
-            const imageSlot = tempImages[dateId][time];
-            const btn = event.currentTarget;
-            const card = btn.closest('.slot-card');
-            const originalText = btn.innerText;
-
-            const hasImage = Boolean(imageSlot.file || imageSlot.previewUrl || imageSlot.originalUrl);
-            const isScheduled = hasImage || caption.trim() !== '' || isManual;
-
-            btn.disabled = true;
-            btn.innerText = imageSlot.file ? 'Enviando imagem...' : 'Salvando...';
-
-            try {
-                const payload = {
-                    data: dateId,
-                    horario: time,
-                    legenda: caption,
-                    link_imagem: imageSlot.removeRequested ? '' : (imageSlot.file ? '' : imageSlot.originalUrl),
-                    programado: isScheduled,
-                    manual: isManual
-                };
-
-                if (imageSlot.file) {
-                    payload.imagem_base64 = await fileToDataUrl(imageSlot.file);
-                    payload.nome_imagem = imageSlot.file.name;
-                    payload.tipo_imagem = imageSlot.file.type;
-                }
-
-                // No GitHub Pages, o navegador pode bloquear a leitura da resposta do
-                // Google Apps Script por causa do CORS. O modo no-cors permite enviar
-                // normalmente os dados para a planilha e para o Google Drive.
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload),
-                    redirect: 'follow'
-                });
-
-                // Como no modo no-cors não é possível ler a resposta do Google,
-                // atualizamos a tela imediatamente e recarregamos os dados da nuvem
-                // alguns segundos depois para obter o link definitivo da imagem.
-                const previewUrl = imageSlot.removeRequested ? '' : imageSlot.previewUrl;
-                const originalUrl = imageSlot.removeRequested ? '' : imageSlot.originalUrl;
-                const downloadUrl = imageSlot.removeRequested ? '' : imageSlot.downloadUrl;
-
-                db[dateId][time] = {
-                    caption,
-                    manual: isManual,
-                    isScheduled,
-                    imageUrl: previewUrl,
-                    originalUrl,
-                    downloadUrl
-                };
-
-                tempImages[dateId][time] = {
-                    file: null,
-                    previewUrl,
-                    originalUrl,
-                    downloadUrl,
-                    removeRequested: false
-                };
-
-                card.style.borderColor = isScheduled ? 'var(--success)' : 'transparent';
-                btn.innerText = '✅ Enviado para a nuvem!';
-
-                // Dá tempo para o Apps Script gravar a linha e fazer upload da imagem.
-                setTimeout(async () => {
-                    try {
-                        await loadFromCloud();
-                        renderDashboard();
-                    } catch (syncError) {
-                        console.warn('O envio foi feito, mas a atualização automática falhou.', syncError);
-                    }
-                }, imageSlot.file ? 5000 : 2500);
-
-                setTimeout(() => { btn.innerText = originalText; }, 1800);
-            } catch (error) {
-                console.error(error);
-                btn.innerText = '❌ Erro ao salvar';
-                alert(`Não foi possível salvar: ${error.message}`);
-                setTimeout(() => { btn.innerText = originalText; }, 1800);
-            } finally {
-                btn.disabled = false;
-            }
-        }
-
-        function downloadOriginalImage(dateId, time) {
-            const imageSlot = tempImages[dateId][time];
-
-            // Imagem recém-selecionada e ainda não enviada: baixa o arquivo local.
-            if (imageSlot.file && imageSlot.previewUrl) {
-                const localLink = document.createElement('a');
-                localLink.href = imageSlot.previewUrl;
-                localLink.download = imageSlot.file.name || 'imagem';
-                document.body.appendChild(localLink);
-                localLink.click();
-                document.body.removeChild(localLink);
-                return;
-            }
-
-            const targetUrl = imageSlot.downloadUrl || imageSlot.originalUrl;
-            if (!targetUrl) {
-                alert('Nenhuma imagem anexada neste horário.');
-                return;
-            }
-
-            // No celular, abrir o link próprio de download é mais confiável
-            // do que usar o atributo download em outro domínio.
-            const newWindow = window.open(targetUrl, '_blank', 'noopener');
-            if (!newWindow) window.location.href = targetUrl;
-        }
-
-        function openReportModal() {
-            document.getElementById('report-modal').style.display = 'flex';
-            document.getElementById('modal-step-1').style.display = 'grid';
-            document.getElementById('modal-step-2').style.display = 'none';
-            document.getElementById('modal-title').innerText = 'Tipo de Relatório';
-        }
-        function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
-
-        function showDateSelector() {
-            document.getElementById('modal-step-1').style.display = 'none';
-            document.getElementById('modal-title').innerText = 'Escolha a Data';
-            const step2 = document.getElementById('modal-step-2');
-            step2.style.display = 'grid';
-            step2.innerHTML = '';
-            dates.forEach(d => {
-                const btn = document.createElement('button');
-                btn.className = 'modal-btn';
-                btn.innerText = d.label;
-                btn.onclick = () => generateReport('day', d.id, d.label);
-                step2.appendChild(btn);
-            });
-        }
-
-        function generateReport(type, dateId = null, dateLabel = null) {
-            closeReportModal();
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const reportDates = type === 'day' ? dates.filter(d => d.id === dateId) : dates;
-
-            canvas.width = 600;
-            canvas.height = 100 + (reportDates.length * 150) + 40;
-            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#1e1e2f'; ctx.fillRect(0, 0, canvas.width, 80);
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 24px Arial'; ctx.textAlign = 'center';
-            ctx.fillText(type === 'day' ? `RELATÓRIO DIÁRIO - ${dateLabel}` : 'RELATÓRIO SEMANAL', 300, 45);
-
-            let currentY = 120;
-            reportDates.forEach(d => {
-                ctx.fillStyle = '#4f46e5'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'left';
-                ctx.fillText(`Data: ${d.label}`, 40, currentY);
-                currentY += 40;
-                ctx.font = '16px Arial';
-                let col = 0; let tempY = currentY;
-                TIMES.forEach(time => {
-                    const isScheduled = db[d.id][time].isScheduled;
-                    ctx.fillStyle = isScheduled ? '#059669' : '#dc2626';
-                    ctx.fillText(`${time} ${isScheduled ? '✅ Programado' : '❌ Não Programado'}`, col === 0 ? 40 : 300, tempY);
-                    col++;
-                    if (col > 1) { col = 0; tempY += 30; }
-                });
-                currentY += 100;
-            });
-
-            const link = document.createElement('a');
-            link.href = canvas.toDataURL('image/png');
-            link.download = 'Relatorio.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        async function initializeApp() {
-            dates = generateDates();
-            await loadFromCloud();
-            renderDashboard();
-        }
-
-        initializeApp();
-    </script>
-</body>
-</html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejador de Posts - Tela Cheia</title>
-    <style>
-        :root {
-            /* Cores Fixas */
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --success: #10b981;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-
-            /* Tema Claro (Padrão) */
-            --bg-main: #f0f2f5;
-            --bg-header: #1e1e2f;
-            --bg-card: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --upload-bg: #f8fafc;
-            --badge-bg: #f3f4f6;
-        }
-
-        /* Tema Escuro */
-        [data-theme="dark"] {
-            --bg-main: #121212;
-            --bg-header: #000000;
-            --bg-card: #1e1e1e;
-            --text-main: #e5e7eb;
-            --text-muted: #9ca3af;
-            --border-color: #374151;
-            --upload-bg: #2d3748;
-            --badge-bg: #374151;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* --- CABEÇALHO GLOBAL --- */
-        .global-header {
-            background-color: var(--bg-header);
-            color: white;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: background-color 0.3s;
-        }
-
-        .global-header h1 {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-header {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 6px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        .btn-header:hover { background: var(--primary-hover); }
-        .btn-theme { background: #4b5563; }
-        .btn-theme:hover { background: #374151; }
-
-        /* --- CONTAINER PRINCIPAL --- */
-        .container {
-            width: 100%;
-            height: calc(100vh - 50px);
-            padding: 15px;
-        }
-
-        /* --- DASHBOARD --- */
-        #dashboard-view { height: 100%; width: 100%; }
-
-        .grid-dates {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 15px;
-            height: 100%;
-            width: 100%;
-        }
-
-        .date-card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s, background-color 0.3s;
-            border: 1px solid var(--border-color);
-        }
-
-        .date-card:hover { transform: scale(1.02); }
-
-        .date-header {
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-
-        .hours-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 8px;
-            padding: 10px;
-            flex: 1;
-        }
-
-        .hour-badge {
-            background: var(--badge-bg);
-            color: var(--text-muted);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-
-        .hour-badge.scheduled {
-            background: var(--success);
-            color: white;
-            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
-        }
-
-        /* --- TELA DE DETALHES --- */
-        #detail-view {
-            display: none;
-            height: 100%;
-            width: 100%;
-            flex-direction: column;
-        }
-
-        header.detail-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            height: 50px;
-            margin-bottom: 15px;
-        }
-
-        .back-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-
-        .slots-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 15px;
-            flex: 1;
-        }
-
-        .slot-card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            border: 2px solid var(--border-color);
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-
-        .slot-header {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .file-upload-wrapper { margin-bottom: 10px; }
-        .file-upload-wrapper input[type="file"] { display: none; }
-
-        .custom-file-upload {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px 5px;
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            color: var(--text-muted);
-            background: var(--upload-bg);
-            text-align: center;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-
-        .custom-file-upload.drag-active {
-            background: #e0e7ff;
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .preview-container {
-            position: relative;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .image-preview {
-            width: 100%;
-            height: 65px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .btn-remove-img {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .btn-remove-img:hover { background: var(--danger-hover); }
-
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            resize: none;
-            flex: 1;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            background: var(--bg-card);
-            color: var(--text-main);
-        }
-
-        /* Checkbox de Marcação Manual */
-        .manual-check-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            color: var(--text-main);
-        }
-
-        .manual-check-wrapper input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            accent-color: var(--success);
-        }
-
-        .manual-check-wrapper label {
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        button.action-btn {
-            padding: 8px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85rem;
-            transition: background-color 0.2s;
-        }
-
-        .btn-download { background: var(--primary); color: white; }
-        .btn-download:hover { background: var(--primary-hover); }
-        .btn-save { background: var(--success); color: white; width: 100%; grid-column: span 2; padding: 10px; font-size: 0.95rem;}
-
-        /* --- MODAL DE RELATÓRIO --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: var(--bg-card);
-            padding: 25px;
-            border-radius: 12px;
-            width: 400px;
-            max-width: 90%;
-            text-align: center;
-            border: 1px solid var(--border-color);
-        }
-
-        .modal-title {
-            font-size: 1.3rem;
-            color: var(--text-main);
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        .modal-buttons { display: grid; gap: 12px; }
-
-        .modal-btn {
-            background: var(--bg-main);
-            color: var(--text-main);
-            padding: 12px;
-            font-size: 1rem;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            border-radius: 6px;
-        }
-        
-        .modal-btn.primary { background: var(--primary); color: white; border: none; }
-        .modal-close { margin-top: 20px; background: transparent; color: var(--danger); border: 1px solid var(--danger); }
-        .date-selector-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-
-    </style>
-</head>
-<body>
-
-    <header class="global-header">
-        <h1>Gerenciador de Mídias</h1>
-        <div class="header-actions">
-            <button class="btn-header btn-theme" onclick="toggleTheme()">🌓 Tema Escuro</button>
-            <button class="btn-header" onclick="openReportModal()">📊 Relatório</button>
-        </div>
-    </header>
-
-    <div class="container">
-        <div id="dashboard-view">
-            <div class="grid-dates" id="grid-dates"></div>
-        </div>
-
-        <div id="detail-view">
-            <header class="detail-header">
-                <button class="back-btn" onclick="showDashboard()">⬅ Voltar</button>
-                <h2 id="detail-title">Detalhes do Dia</h2>
-            </header>
-            <div class="slots-container" id="slots-container"></div>
-        </div>
-    </div>
-
-    <!-- MODAL -->
-    <div id="report-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-title" id="modal-title">Tipo de Relatório</div>
-            <div id="modal-step-1" class="modal-buttons">
-                <button class="modal-btn primary" onclick="showDateSelector()">Relatório do Dia</button>
-                <button class="modal-btn primary" onclick="generateReport('week')">Relatório Semanal</button>
-            </div>
-            <div id="modal-step-2" class="modal-buttons date-selector-grid" style="display: none;"></div>
-            <button class="modal-btn modal-close" onclick="closeReportModal()">Cancelar</button>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbylZjdUcRyYpTTgo815SkGHE3oaXMB7dO2cNhVlU9iO5_KfRV6Uz21T0-gFpADAXpMR/exec';
-        const TIMES = ['07:00', '12:00', '15:00', '18:00', '20:00', '22:30'];
-        const numDays = 9;
-
-        const cardColors = [
-            'linear-gradient(135deg, #FF6B6B 0%, #EE5253 100%)',
-            'linear-gradient(135deg, #48DBFB 0%, #0ABDE3 100%)',
-            'linear-gradient(135deg, #1DD1A1 0%, #10AC84 100%)',
-            'linear-gradient(135deg, #FECA57 0%, #FF9F43 100%)',
-            'linear-gradient(135deg, #5F27CD 0%, #341F97 100%)',
-            'linear-gradient(135deg, #FF9FF3 0%, #F368E0 100%)',
-            'linear-gradient(135deg, #54A0FF 0%, #2E86DE 100%)',
-            'linear-gradient(135deg, #00D2D3 0%, #01A3A4 100%)',
-            'linear-gradient(135deg, #FF7F50 0%, #E15F41 100%)'
-        ];
-
-        let db = {};
-        let tempImages = {};
-        let dates = [];
-
-        function toggleTheme() {
-            const body = document.body;
-            const isDark = body.getAttribute('data-theme') === 'dark';
-            if (isDark) {
-                body.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        }
-
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.setAttribute('data-theme', 'dark');
-        }
-
-        function normalizeDateId(value) {
-            return String(value || '').trim().replaceAll('/', '-');
-        }
-
-        function generateDates() {
-            const generated = [];
-            const today = new Date();
-
-            for (let i = 0; i < numDays; i++) {
-                const currentDate = new Date(today);
-                currentDate.setDate(today.getDate() + i);
-
-                const day = String(currentDate.getDate()).padStart(2, '0');
-                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                const dateId = `${day}-${month}-${currentDate.getFullYear()}`;
-                const dateLabel = `${day}/${month}`;
-
-                generated.push({ id: dateId, label: dateLabel });
-
-                db[dateId] = db[dateId] || {};
-                tempImages[dateId] = tempImages[dateId] || {};
-
-                TIMES.forEach(time => {
-                    db[dateId][time] = db[dateId][time] || {
                         caption: '',
-                        isScheduled: false,
-                        manual: false,
-                        imageUrl: ''
-                    };
-                    tempImages[dateId][time] = tempImages[dateId][time] || {
-                        file: null,
-                        url: db[dateId][time].imageUrl || '',
-                        removeRequested: false
-                    };
-                });
-            }
-            return generated;
-        }
-
-        async function loadFromCloud() {
-            const title = document.querySelector('.global-header h1');
-            const originalTitle = title.innerText;
-            title.innerText = 'Carregando dados...';
-
-            try {
-                const response = await fetch(`${API_URL}?t=${Date.now()}`, {
-                    method: 'GET',
-                    cache: 'no-store',
-                    redirect: 'follow'
-                });
-
-                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
-
-                const result = await response.json();
-                if (!result.sucesso) throw new Error(result.mensagem || 'Não foi possível carregar os dados.');
-
-                (result.postagens || []).forEach(post => {
-                    const dateId = normalizeDateId(post.data);
-                    const time = String(post.horario || '').trim();
-                    if (!db[dateId] || !db[dateId][time]) return;
-
-                    db[dateId][time] = {
-                        caption: post.legenda || '',
                         isScheduled: Boolean(post.programado),
                         manual: Boolean(post.manual),
-                        imageUrl: post.link_imagem || ''
+                        imageUrl: '',
+                        originalUrl,
+                        folderUrl
                     };
 
                     tempImages[dateId][time] = {
                         file: null,
-                        url: post.link_imagem || '',
-                        removeRequested: false
+                        originalUrl,
+                        folderUrl,
+                        refazendo: false
                     };
                 });
+
+                saveLocalCache();
+                renderDashboard();
+                if (currentDetailDate) {
+                    updateDriveButton();
+                }
             } catch (error) {
                 console.error(error);
-                alert('Não foi possível carregar os dados da planilha. Verifique se o aplicativo do Apps Script foi publicado para “Qualquer pessoa”.');
+                if (!silent) {
+                    alert('O programa abriu com os dados salvos neste aparelho, mas não conseguiu sincronizar com a nuvem agora.');
+                }
             } finally {
                 title.innerText = originalTitle;
             }
@@ -1413,9 +669,11 @@
         }
 
         function showDetail(dateId, dateLabel) {
+            currentDetailDate = dateId;
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'flex';
             document.getElementById('detail-title').innerText = `Agendamentos: ${dateLabel}`;
+            updateDriveButton();
 
             const container = document.getElementById('slots-container');
             container.innerHTML = '';
@@ -1424,32 +682,32 @@
                 const slotData = db[dateId][time];
                 const imageSlot = tempImages[dateId][time];
                 const inputId = `file-${dateId}-${index}`;
-                const borderColor = slotData.isScheduled ? 'var(--success)' : 'transparent';
+                const finalizado = Boolean(slotData.isScheduled && !imageSlot.refazendo);
+                const borderColor = slotData.isScheduled ? 'var(--success)' : 'var(--border-color)';
+
+                const areaImagem = finalizado
+                    ? `<div class="status-finalizado">✅ Finalizado</div>
+                       <button class="btn-refazer" onclick="refazerSlot('${dateId}', '${time}', '${index}')">🔄 Refazer</button>`
+                    : `<div class="file-upload-wrapper">
+                           <label for="${inputId}" class="custom-file-upload" id="label-${inputId}"
+                               ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${dateId}', '${time}', '${inputId}')">
+                               🖼️ Anexar imagem
+                           </label>
+                           <input type="file" id="${inputId}" accept="image/*" onchange="handleFileInput(event, '${dateId}', '${time}', '${inputId}')">
+                           <div class="file-name" id="file-name-${inputId}">${imageSlot.file ? escapeHtml(imageSlot.file.name) : 'Nenhuma imagem selecionada'}</div>
+                       </div>`;
 
                 const slotHTML = `
                     <div class="slot-card" style="border-color: ${borderColor}">
                         <div class="slot-header">⏰ ${time}</div>
-                        <div class="file-upload-wrapper">
-                            <label for="${inputId}" class="custom-file-upload" id="label-${inputId}"
-                                style="${imageSlot.url ? 'display:none;' : 'display:flex;'}"
-                                ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${dateId}', '${time}', '${inputId}')">
-                                🖼️ Clique ou Arraste a Imagem
-                            </label>
-                            <input type="file" id="${inputId}" accept="image/*" onchange="handleFileInput(event, '${dateId}', '${time}', '${inputId}')">
-                            <div class="preview-container" id="preview-container-${inputId}" style="${imageSlot.url ? 'display:flex;' : 'display:none;'}">
-                                <img id="preview-${inputId}" class="image-preview" src="${imageSlot.url || ''}">
-                                <button class="btn-remove-img" onclick="removeImage('${dateId}', '${time}', '${inputId}')">🗑️ Trocar/Apagar</button>
-                            </div>
-                        </div>
-                        <textarea id="caption-${dateId}-${index}" placeholder="Digite a legenda...">${escapeHtml(slotData.caption || '')}</textarea>
+                        ${areaImagem}
                         <div class="manual-check-wrapper">
                             <input type="checkbox" id="manual-${dateId}-${index}" ${slotData.manual ? 'checked' : ''}>
                             <label for="manual-${dateId}-${index}">Já programado externamente</label>
                         </div>
-                        <div class="actions">
-                            <button class="action-btn btn-download" onclick="downloadOriginalImage('${dateId}', '${time}')">⬇️ Baixar Imagem</button>
+                        ${finalizado ? '' : `<div class="actions">
                             <button class="action-btn btn-save" id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)">☁️ Salvar na nuvem</button>
-                        </div>
+                        </div>`}
                     </div>`;
                 container.innerHTML += slotHTML;
             });
@@ -1492,20 +750,46 @@
                 return;
             }
 
-            const imageUrl = URL.createObjectURL(file);
-            tempImages[dateId][time] = { file, url: imageUrl, removeRequested: false };
-            document.getElementById(`label-${inputId}`).style.display = 'none';
-            document.getElementById(`preview-${inputId}`).src = imageUrl;
-            document.getElementById(`preview-container-${inputId}`).style.display = 'flex';
+            tempImages[dateId][time].file = file;
+            tempImages[dateId][time].refazendo = true;
+            const nameEl = document.getElementById(`file-name-${inputId}`);
+            if (nameEl) nameEl.innerText = `Selecionada: ${file.name}`;
         }
 
-        function removeImage(dateId, time, inputId) {
-            const current = tempImages[dateId][time];
-            if (current.file && current.url) URL.revokeObjectURL(current.url);
-            tempImages[dateId][time] = { file: null, url: '', removeRequested: true };
-            document.getElementById(inputId).value = '';
-            document.getElementById(`preview-container-${inputId}`).style.display = 'none';
-            document.getElementById(`label-${inputId}`).style.display = 'flex';
+        async function refazerSlot(dateId, time, index) {
+            const confirmar = confirm(`Refazer ${time}? O horário voltará para não finalizado. A imagem antiga continuará na pasta do Drive.`);
+            if (!confirmar) return;
+
+            // Atualiza imediatamente todas as telas e o cache.
+            db[dateId][time] = {
+                caption: '',
+                manual: false,
+                isScheduled: false,
+                imageUrl: '',
+                originalUrl: '',
+                folderUrl: driveFolderUrl
+            };
+            tempImages[dateId][time] = {
+                file: null,
+                originalUrl: '',
+                folderUrl: driveFolderUrl,
+                refazendo: false
+            };
+            saveLocalCache();
+            renderDashboard();
+            showDetail(dateId, dates.find(d => d.id === dateId)?.label || dateId.slice(0, 5).replace('-', '/'));
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'refazer', data: dateId, horario: time }),
+                    redirect: 'follow'
+                });
+            } catch (error) {
+                console.warn('O horário foi redefinido neste aparelho, mas a nuvem não respondeu.', error);
+            }
         }
 
         function fileToDataUrl(file) {
@@ -1518,15 +802,15 @@
         }
 
         async function saveSlot(dateId, time, index, event) {
-            const caption = document.getElementById(`caption-${dateId}-${index}`).value;
             const isManual = document.getElementById(`manual-${dateId}-${index}`).checked;
             const imageSlot = tempImages[dateId][time];
             const btn = event.currentTarget;
-            const card = btn.closest('.slot-card');
             const originalText = btn.innerText;
 
-            const hasImage = Boolean(imageSlot.file || imageSlot.url);
-            const isScheduled = hasImage || caption.trim() !== '' || isManual;
+            if (!imageSlot.file && !isManual) {
+                alert('Anexe uma imagem ou marque que a programação já foi feita externamente.');
+                return;
+            }
 
             btn.disabled = true;
             btn.innerText = imageSlot.file ? 'Enviando imagem...' : 'Salvando...';
@@ -1535,9 +819,9 @@
                 const payload = {
                     data: dateId,
                     horario: time,
-                    legenda: caption,
-                    link_imagem: imageSlot.removeRequested ? '' : (imageSlot.file ? '' : imageSlot.url),
-                    programado: isScheduled,
+                    legenda: '',
+                    link_imagem: imageSlot.file ? '' : imageSlot.originalUrl,
+                    programado: true,
                     manual: isManual
                 };
 
@@ -1547,9 +831,6 @@
                     payload.tipo_imagem = imageSlot.file.type;
                 }
 
-                // No GitHub Pages, o navegador pode bloquear a leitura da resposta do
-                // Google Apps Script por causa do CORS. O modo no-cors permite enviar
-                // normalmente os dados para a planilha e para o Google Drive.
                 await fetch(API_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -1558,38 +839,37 @@
                     redirect: 'follow'
                 });
 
-                // Como no modo no-cors não é possível ler a resposta do Google,
-                // atualizamos a tela imediatamente e recarregamos os dados da nuvem
-                // alguns segundos depois para obter o link definitivo da imagem.
-                const previewUrl = imageSlot.file ? imageSlot.url : (imageSlot.removeRequested ? '' : imageSlot.url);
-
                 db[dateId][time] = {
-                    caption,
+                    caption: '',
                     manual: isManual,
-                    isScheduled,
-                    imageUrl: previewUrl
+                    isScheduled: true,
+                    imageUrl: '',
+                    originalUrl: imageSlot.originalUrl || '',
+                    folderUrl: driveFolderUrl
                 };
 
                 tempImages[dateId][time] = {
                     file: null,
-                    url: previewUrl,
-                    removeRequested: false
+                    originalUrl: imageSlot.originalUrl || '',
+                    folderUrl: driveFolderUrl,
+                    refazendo: false
                 };
 
-                card.style.borderColor = isScheduled ? 'var(--success)' : 'transparent';
-                btn.innerText = '✅ Enviado para a nuvem!';
+                btn.innerText = '✅ Finalizado';
+                saveLocalCache();
+                renderDashboard();
 
-                // Dá tempo para o Apps Script gravar a linha e fazer upload da imagem.
                 setTimeout(async () => {
                     try {
                         await loadFromCloud();
                         renderDashboard();
+                        if (currentDetailDate === dateId) showDetail(dateId, dates.find(d => d.id === dateId)?.label || dateId);
                     } catch (syncError) {
                         console.warn('O envio foi feito, mas a atualização automática falhou.', syncError);
                     }
-                }, imageSlot.file ? 5000 : 2500);
+                }, imageSlot.file ? 4500 : 2000);
 
-                setTimeout(() => { btn.innerText = originalText; }, 1800);
+                setTimeout(() => showDetail(dateId, dates.find(d => d.id === dateId)?.label || dateId), 700);
             } catch (error) {
                 console.error(error);
                 btn.innerText = '❌ Erro ao salvar';
@@ -1600,21 +880,19 @@
             }
         }
 
-        function downloadOriginalImage(dateId, time) {
-            const imageSlot = tempImages[dateId][time];
-            if (!imageSlot.url) {
-                alert('Nenhuma imagem anexada neste horário.');
+        function updateDriveButton() {
+            const btn = document.getElementById('btn-drive');
+            if (!btn) return;
+            btn.disabled = !driveFolderUrl;
+            btn.innerText = driveFolderUrl ? '📂 Abrir Drive' : '📂 Preparando pasta do Drive...';
+        }
+
+        function openDriveFolder() {
+            if (!driveFolderUrl) {
+                alert('A pasta do Drive ainda está sendo preparada. Aguarde a sincronização e tente novamente.');
                 return;
             }
-
-            const link = document.createElement('a');
-            link.href = imageSlot.url;
-            link.target = '_blank';
-            link.rel = 'noopener';
-            if (imageSlot.file) link.download = imageSlot.file.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            window.open(driveFolderUrl, '_blank', 'noopener,noreferrer');
         }
 
         function openReportModal() {
@@ -1678,10 +956,14 @@
             document.body.removeChild(link);
         }
 
-        async function initializeApp() {
+        function initializeApp() {
             dates = generateDates();
-            await loadFromCloud();
+            loadLocalCache();
             renderDashboard();
+            updateDriveButton();
+
+            // Sincroniza em segundo plano sem segurar a abertura da tela.
+            setTimeout(() => loadFromCloud({ silent: true }), 100);
         }
 
         initializeApp();
