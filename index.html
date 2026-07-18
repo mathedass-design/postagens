@@ -1084,6 +1084,22 @@
             .slot-card { padding: 4px !important; }
         }
 
+
+        /* Correção exclusiva para o site instalado na tela inicial do celular.
+           Apenas desloca o cabeçalho abaixo da barra de status, sem alterar o restante. */
+        @media (display-mode: standalone) and (max-width: 700px),
+               (display-mode: fullscreen) and (max-width: 700px) {
+            body {
+                grid-template-rows: calc(52px + env(safe-area-inset-top, 0px)) minmax(0, 1fr) !important;
+            }
+
+            .global-header {
+                height: calc(52px + env(safe-area-inset-top, 0px)) !important;
+                min-height: calc(52px + env(safe-area-inset-top, 0px)) !important;
+                padding-top: calc(5px + env(safe-area-inset-top, 0px)) !important;
+            }
+        }
+
 </style>
 </head>
 <body>
