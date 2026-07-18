@@ -1627,7 +1627,7 @@
             });
         }
 
-        function generateReport(type, dateId = null, dateLabel = null) {
+        async function generateReport(type, dateId = null, dateLabel = null) {
             closeReportModal();
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -1657,12 +1657,41 @@
                 currentY += 100;
             });
 
+            const fileName = type === 'day'
+                ? `Relatorio_${String(dateLabel || '').replace('/', '-')}.png`
+                : 'Relatorio_Semanal.png';
+
+            const blob = await new Promise((resolve, reject) => {
+                canvas.toBlob(result => result ? resolve(result) : reject(new Error('Não foi possível gerar o relatório.')), 'image/png');
+            });
+
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            // Em celulares e no atalho instalado, usa o compartilhamento nativo.
+            // Assim é possível salvar em Arquivos, Fotos, Drive ou enviar pelo WhatsApp.
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Relatório de postagens'
+                    });
+                    return;
+                } catch (error) {
+                    if (error && error.name === 'AbortError') return;
+                }
+            }
+
+            // Computador e navegadores móveis que aceitam download normal.
+            const objectUrl = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            link.href = canvas.toDataURL('image/png');
-            link.download = 'Relatorio.png';
+            link.href = objectUrl;
+            link.download = fileName;
+            link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
+            link.remove();
+
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 15000);
         }
 
         function initializeApp() {
