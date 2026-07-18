@@ -1347,6 +1347,111 @@
             }
         }
 
+
+        /* ===== NOVA TELA INICIAL SIMPLIFICADA ===== */
+        .static-date-card { cursor: default !important; }
+        .static-date-card:hover { transform: none !important; }
+        .composer-card {
+            height: 100%; min-height: 0; overflow: hidden;
+            background: var(--bg-card); border: 2px solid var(--primary);
+            border-radius: 12px; padding: 9px; display: grid;
+            grid-template-rows: auto minmax(48px, 1fr) auto minmax(42px, .8fr) auto;
+            gap: 6px; box-shadow: 0 7px 18px rgba(79,70,229,.18);
+        }
+        .composer-title { text-align:center; font-weight:900; color:var(--primary); font-size:.84rem; }
+        .composer-textarea { width:100%; min-height:0; resize:none; border:1px solid var(--border-color); border-radius:8px; padding:7px; background:var(--upload-bg); color:var(--text-main); font-size:.78rem; outline:none; }
+        .composer-textarea:focus { border-color:var(--primary); }
+        .composer-actions { display:grid; grid-template-columns:.75fr 1.25fr; gap:5px; }
+        .composer-btn { border:0; border-radius:7px; min-height:32px; color:white; font-weight:800; cursor:pointer; font-size:.7rem; }
+        .composer-btn.paste { background:var(--primary); }
+        .composer-btn.save { background:var(--success); }
+        .composer-drop-zone { min-height:0; border:2px dashed var(--border-color); border-radius:8px; display:flex; align-items:center; justify-content:center; text-align:center; padding:5px; background:var(--upload-bg); color:var(--text-muted); cursor:pointer; font-size:.69rem; font-weight:700; }
+        .composer-drop-zone input { display:none; }
+        .composer-drop-zone.drag-active { border-color:var(--primary); color:var(--primary); background:#e0e7ff; }
+        .composer-status { text-align:center; color:var(--text-muted); font-size:.58rem; line-height:1.1; }
+        .composer-status.uploading { color:var(--primary); font-weight:800; }
+        .composer-status.success { color:var(--success); font-weight:900; }
+        .memes-shell { height:100%; padding:12px; overflow:hidden; }
+        .memes-list-panel { height:100%; }
+        .memes-title-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .memes-back { padding:8px 14px; font-size:.82rem; }
+        .memes-list-panel .draft-cards { grid-template-columns:repeat(3,minmax(0,1fr)); }
+
+        @media (max-width:700px) {
+            .composer-card { padding:4px; gap:3px; border-radius:7px; grid-template-rows:auto minmax(32px,1fr) auto minmax(28px,.7fr) auto; }
+            .composer-title { font-size:.53rem; }
+            .composer-textarea { padding:4px; font-size:.52rem; border-radius:5px; }
+            .composer-actions { gap:2px; grid-template-columns:1fr 1.35fr; }
+            .composer-btn { min-height:22px; border-radius:4px; font-size:.43rem; padding:2px; }
+            .composer-drop-zone { padding:2px; border-width:1px; border-radius:5px; font-size:.43rem; line-height:1.05; }
+            .composer-status { font-size:.36rem; }
+            .memes-shell { padding:6px; }
+            .memes-title-row h2 { font-size:.76rem; }
+            .memes-back { min-height:32px!important; height:32px!important; padding:4px 8px!important; font-size:.62rem!important; width:auto!important; }
+            .memes-list-panel .draft-cards { grid-template-columns:1fr; }
+        }
+
+
+        /* ===== HORÁRIOS CLICÁVEIS + LAYOUT MÓVEL PRIORITÁRIO ===== */
+        .hour-badge {
+            border: 0;
+            cursor: pointer;
+            user-select: none;
+            transition: transform .15s ease, background-color .2s ease, color .2s ease, box-shadow .2s ease;
+        }
+        .hour-badge:hover { transform: translateY(-1px); }
+        .hour-badge:active { transform: scale(.97); }
+        .hour-badge:disabled { opacity: .7; cursor: wait; }
+        .hour-badge:not(.scheduled) {
+            background: #d1d5db;
+            color: #374151;
+        }
+        [data-theme="dark"] .hour-badge:not(.scheduled) {
+            background: #4b5563;
+            color: #f3f4f6;
+        }
+        .hour-badge.scheduled {
+            background: var(--success) !important;
+            color: #fff !important;
+            box-shadow: 0 2px 7px rgba(16,185,129,.32);
+        }
+
+        @media (max-width: 700px) {
+            html, body { height: auto !important; min-height: 100% !important; overflow-y: auto !important; }
+            body { display: block !important; }
+            .global-header { position: sticky; top: 0; z-index: 50; }
+            .container { height: auto !important; min-height: calc(100dvh - 88px) !important; overflow: visible !important; padding: 8px !important; }
+            #dashboard-view { height: auto !important; overflow: visible !important; }
+            .grid-dates {
+                display: flex !important;
+                flex-direction: column !important;
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+                gap: 9px !important;
+            }
+            .composer-card {
+                order: -1 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 310px !important;
+                padding: 12px !important;
+                gap: 9px !important;
+                border-radius: 12px !important;
+                grid-template-rows: auto minmax(112px, 1fr) auto minmax(82px, auto) auto !important;
+            }
+            .composer-title { font-size: .92rem !important; }
+            .composer-textarea { min-height: 112px !important; padding: 10px !important; font-size: .9rem !important; border-radius: 9px !important; }
+            .composer-actions { gap: 7px !important; }
+            .composer-btn { min-height: 44px !important; padding: 8px !important; font-size: .76rem !important; border-radius: 8px !important; }
+            .composer-drop-zone { min-height: 82px !important; padding: 12px !important; font-size: .78rem !important; border-width: 2px !important; border-radius: 9px !important; }
+            .composer-status { font-size: .7rem !important; }
+            .date-card { width: 100% !important; height: auto !important; min-height: 145px !important; flex: 0 0 auto !important; }
+            .date-header { padding: 8px 4px !important; font-size: .95rem !important; }
+            .hours-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; grid-template-rows: repeat(2, 48px) !important; gap: 7px !important; padding: 9px !important; }
+            .hour-badge { min-height: 48px !important; font-size: .82rem !important; border-radius: 8px !important; }
+        }
+
 </style>
 </head>
 <body>
@@ -1355,7 +1460,7 @@
         <h1>Gerenciador de Mídias</h1>
         <div class="header-actions">
             <button class="btn-header btn-home-header" onclick="showDashboard()">🏠 Início</button>
-            <button class="btn-header" onclick="showDrafts()">📝 Rascunho</button>
+            <button class="btn-header" onclick="showMemes()">😂 Memes</button>
             <button class="btn-header btn-drive-header" id="btn-drive" onclick="openDriveFolder()" disabled>📂 Drive</button>
             <button class="btn-header btn-theme" onclick="toggleTheme()">🌓 Tema</button>
             <button class="btn-header" onclick="openReportModal()">📊 Relatório</button>
@@ -1376,40 +1481,15 @@
         </div>
 
         <div id="draft-view">
-            <div class="draft-shell">
-                <section class="draft-panel">
-                    <h2>📝 Novo rascunho</h2>
-                    <textarea id="draft-text" class="draft-textarea" placeholder="Digite ou cole texto ou imagem..." onpaste="handleDraftTextareaPaste(event)"></textarea>
-                    <div class="draft-paste-hint">Você também pode copiar uma imagem e colar diretamente nesta caixa.</div>
-                    <div class="draft-quick-actions">
-                        <button id="btn-paste-draft" class="draft-action secondary" onclick="pasteDraftContent()">📋 COLAR</button>
-                        <button id="btn-save-draft" class="draft-action" onclick="saveDraftText()">SALVAR TEXTO</button>
+            <div class="memes-shell">
+                <section class="draft-list-panel memes-list-panel">
+                    <div class="memes-title-row">
+                        <h2>😂 Memes — textos salvos</h2>
+                        <button class="back-btn memes-back" onclick="showDashboard()">⬅ Início</button>
                     </div>
-                    <label class="draft-file-label" id="draft-drop-zone"
-                        ondragover="handleDraftDragOver(event)" ondragleave="handleDraftDragLeave(event)" ondrop="handleDraftDrop(event)">
-                        🖼️ Clique ou arraste uma imagem aos Memes
-                        <input id="draft-image" type="file" accept="image/*" onchange="updateDraftImageName()">
-                    </label>
-                    <div class="draft-file-name" id="draft-image-name">Nenhuma imagem selecionada</div>
-                    <button id="btn-upload-meme" class="draft-action secondary" onclick="uploadMemeImage()">ENVIAR IMAGEM</button>
-                </section>
-                <section class="draft-list-panel">
-                    <h2>Textos salvos</h2>
                     <div id="draft-cards" class="draft-cards"></div>
                 </section>
             </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE PASTAS DO DRIVE -->
-    <div id="drive-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-title">Escolha uma pasta</div>
-            <div class="drive-folder-grid">
-                <button id="btn-folder-postagens" class="drive-folder-btn" onclick="openSelectedDriveFolder('postagens')">📁 Postagens</button>
-                <button id="btn-folder-memes" class="drive-folder-btn" onclick="openSelectedDriveFolder('memes')">🖼️ Memes</button>
-            </div>
-            <button class="modal-btn modal-close" onclick="closeDriveModal()">Cancelar</button>
         </div>
     </div>
 
@@ -1429,7 +1509,7 @@
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbylZjdUcRyYpTTgo815SkGHE3oaXMB7dO2cNhVlU9iO5_KfRV6Uz21T0-gFpADAXpMR/exec';
         const TIMES = ['07:00', '12:00', '15:00', '18:00', '20:00', '22:30'];
-        const numDays = 9;
+        const numDays = 8;
 
         const cardColors = [
             'linear-gradient(135deg, #FF6B6B 0%, #EE5253 100%)',
@@ -1621,9 +1701,10 @@
             grid.innerHTML = '';
 
             dates.forEach((dateObj, index) => {
+                if (index === 4) grid.appendChild(createComposerCard());
+
                 const card = document.createElement('div');
-                card.className = 'date-card';
-                card.onclick = () => showDetail(dateObj.id, dateObj.label);
+                card.className = 'date-card static-date-card';
 
                 const header = document.createElement('div');
                 header.className = 'date-header';
@@ -1634,9 +1715,13 @@
                 hoursGrid.className = 'hours-grid';
 
                 TIMES.forEach(time => {
-                    const badge = document.createElement('div');
+                    const badge = document.createElement('button');
+                    badge.type = 'button';
                     badge.className = `hour-badge ${db[dateObj.id][time].isScheduled ? 'scheduled' : ''}`;
                     badge.innerText = time;
+                    badge.title = db[dateObj.id][time].isScheduled ? 'Clique para marcar como não programado' : 'Clique para marcar como programado';
+                    badge.setAttribute('aria-pressed', db[dateObj.id][time].isScheduled ? 'true' : 'false');
+                    badge.onclick = () => toggleSchedule(dateObj.id, time, badge);
                     hoursGrid.appendChild(badge);
                 });
 
@@ -1644,6 +1729,70 @@
                 card.appendChild(hoursGrid);
                 grid.appendChild(card);
             });
+        }
+
+        async function toggleSchedule(dateId, time, button) {
+            const wasScheduled = Boolean(db[dateId][time].isScheduled);
+            const willBeScheduled = !wasScheduled;
+
+            db[dateId][time].isScheduled = willBeScheduled;
+            db[dateId][time].manual = willBeScheduled;
+            button.classList.toggle('scheduled', willBeScheduled);
+            button.setAttribute('aria-pressed', willBeScheduled ? 'true' : 'false');
+            button.title = willBeScheduled ? 'Clique para marcar como não programado' : 'Clique para marcar como programado';
+            saveLocalCache();
+
+            button.disabled = true;
+            try {
+                const payload = willBeScheduled
+                    ? {
+                        data: dateId,
+                        horario: time,
+                        legenda: '',
+                        link_imagem: db[dateId][time].originalUrl || '',
+                        programado: true,
+                        manual: true
+                    }
+                    : { acao: 'refazer', data: dateId, horario: time };
+
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
+                    redirect: 'follow'
+                });
+            } catch (error) {
+                console.error(error);
+                db[dateId][time].isScheduled = wasScheduled;
+                db[dateId][time].manual = wasScheduled;
+                button.classList.toggle('scheduled', wasScheduled);
+                button.setAttribute('aria-pressed', wasScheduled ? 'true' : 'false');
+                saveLocalCache();
+                alert('Não foi possível atualizar esse horário.');
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function createComposerCard() {
+            const card = document.createElement('section');
+            card.className = 'composer-card';
+            card.innerHTML = `
+                <div class="composer-title">➕ ADICIONAR CONTEÚDO</div>
+                <textarea id="home-content-text" class="composer-textarea" placeholder="Digite ou cole um texto..." onpaste="handleHomePaste(event)"></textarea>
+                <div class="composer-actions">
+                    <button id="btn-home-paste" class="composer-btn paste" onclick="pasteHomeContent()">📋 COLAR</button>
+                    <button id="btn-home-save-text" class="composer-btn save" onclick="saveHomeText()">SALVAR TEXTO</button>
+                </div>
+                <label class="composer-drop-zone" id="home-drop-zone"
+                    ondragover="handleHomeDragOver(event)" ondragleave="handleHomeDragLeave(event)" ondrop="handleHomeDrop(event)">
+                    🖼️ Clique, arraste ou cole uma imagem
+                    <input id="home-image-input" type="file" accept="image/*" onchange="uploadHomeSelectedImage()">
+                </label>
+                <div id="home-upload-status" class="composer-status">A imagem será enviada diretamente ao Drive.</div>
+            `;
+            return card;
         }
 
         function showDetail(dateId, dateLabel) {
@@ -1883,7 +2032,145 @@
         }
 
 
-        function showDrafts() {
+        async function saveHomeText() {
+            const input = document.getElementById('home-content-text');
+            const btn = document.getElementById('btn-home-save-text');
+            const texto = String(input?.value || '').trim();
+            if (!texto) {
+                alert('Digite ou cole um texto para salvar em Memes.');
+                return;
+            }
+            await saveDraftTextFromHome(texto, btn, input);
+        }
+
+        async function saveDraftTextFromHome(texto, btn, input) {
+            const original = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'SALVANDO...';
+            const novo = { id: String(Date.now()), texto, criado_em: new Date().toISOString() };
+            try {
+                await fetch(API_URL, {
+                    method: 'POST', mode: 'no-cors', redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ acao: 'salvar_rascunho', ...novo })
+                });
+                drafts.push(novo);
+                input.value = '';
+                btn.textContent = 'SALVO EM MEMES!';
+                renderDrafts();
+            } catch (error) {
+                console.error(error);
+                btn.textContent = 'ERRO';
+                alert('Não foi possível salvar o texto.');
+            } finally {
+                btn.disabled = false;
+                setTimeout(() => btn.textContent = original, 1300);
+            }
+        }
+
+        async function handleHomePaste(event) {
+            const items = Array.from(event.clipboardData?.items || []);
+            const imageItem = items.find(item => item.type?.startsWith('image/'));
+            if (!imageItem) return;
+            event.preventDefault();
+            const blob = imageItem.getAsFile();
+            if (!blob) return;
+            const ext = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+            const file = new File([blob], `meme-colado-${Date.now()}.${ext}`, { type: blob.type });
+            await uploadHomeImage(file);
+        }
+
+        async function pasteHomeContent() {
+            const btn = document.getElementById('btn-home-paste');
+            const input = document.getElementById('home-content-text');
+            const original = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'LENDO...';
+            try {
+                if (navigator.clipboard?.read) {
+                    const items = await navigator.clipboard.read();
+                    for (const item of items) {
+                        const imageType = item.types.find(type => type.startsWith('image/'));
+                        if (imageType) {
+                            const blob = await item.getType(imageType);
+                            const ext = (imageType.split('/')[1] || 'png').replace('jpeg', 'jpg');
+                            await uploadHomeImage(new File([blob], `meme-colado-${Date.now()}.${ext}`, { type: imageType }));
+                            return;
+                        }
+                    }
+                }
+                const text = await navigator.clipboard.readText();
+                if (text) input.value = text;
+                else alert('Não encontrei texto ou imagem na área de transferência.');
+            } catch (error) {
+                console.error(error);
+                alert('Cole diretamente dentro da caixa de texto.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = original;
+            }
+        }
+
+        function handleHomeDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('drag-active');
+        }
+        function handleHomeDragLeave(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-active');
+        }
+        async function handleHomeDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-active');
+            const file = event.dataTransfer.files?.[0];
+            if (file) await uploadHomeImage(file);
+        }
+        async function uploadHomeSelectedImage() {
+            const input = document.getElementById('home-image-input');
+            const file = input.files?.[0];
+            if (file) await uploadHomeImage(file);
+            input.value = '';
+        }
+        async function uploadHomeImage(file) {
+            const status = document.getElementById('home-upload-status');
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Escolha uma imagem válida.');
+                return;
+            }
+            if (file.size > 20 * 1024 * 1024) {
+                alert('A imagem ultrapassa 20 MB.');
+                return;
+            }
+            status.textContent = 'ENVIANDO PARA O DRIVE...';
+            status.classList.add('uploading');
+            try {
+                const base64 = await fileToDataUrl(file);
+                await fetch(API_URL, {
+                    method: 'POST', mode: 'no-cors', redirect: 'follow',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        acao: 'salvar_meme',
+                        imagem_base64: base64,
+                        nome_imagem: file.name,
+                        tipo_imagem: file.type
+                    })
+                });
+                status.textContent = '✅ IMAGEM ENVIADA PARA O DRIVE!';
+                status.classList.remove('uploading');
+                status.classList.add('success');
+            } catch (error) {
+                console.error(error);
+                status.textContent = '❌ ERRO AO ENVIAR A IMAGEM';
+                status.classList.remove('uploading');
+                alert('Não foi possível enviar a imagem.');
+            }
+            setTimeout(() => {
+                status.textContent = 'A imagem será enviada diretamente ao Drive.';
+                status.classList.remove('success', 'uploading');
+            }, 1800);
+        }
+
+        function showMemes() {
             currentDetailDate = '';
             document.body.classList.remove('detail-open');
             document.body.classList.add('draft-open');
@@ -2123,31 +2410,15 @@
         function updateDriveButton() {
             const btn = document.getElementById('btn-drive');
             if (!btn) return;
-            const ready = Boolean(driveFolderUrl || memesFolderUrl);
+            const ready = Boolean(memesFolderUrl || driveFolderUrl);
             btn.disabled = !ready;
             btn.innerText = ready ? '📂 Drive' : '📂 Aguarde';
         }
 
         function openDriveFolder() {
-            if (!driveFolderUrl && !memesFolderUrl) {
-                alert('As pastas do Drive ainda estão sendo preparadas. Aguarde a sincronização e tente novamente.');
-                return;
-            }
-            const postagensBtn = document.getElementById('btn-folder-postagens');
-            const memesBtn = document.getElementById('btn-folder-memes');
-            if (postagensBtn) postagensBtn.disabled = !driveFolderUrl;
-            if (memesBtn) memesBtn.disabled = !memesFolderUrl;
-            document.getElementById('drive-modal').style.display = 'flex';
-        }
-
-        function closeDriveModal() {
-            document.getElementById('drive-modal').style.display = 'none';
-        }
-
-        function openSelectedDriveFolder(folder) {
-            const url = folder === 'memes' ? memesFolderUrl : driveFolderUrl;
+            const url = memesFolderUrl || driveFolderUrl;
             if (!url) {
-                alert('Esta pasta ainda não está disponível.');
+                alert('A pasta das imagens ainda está sendo preparada. Aguarde a sincronização e tente novamente.');
                 return;
             }
             window.open(url, '_blank', 'noopener,noreferrer');
@@ -2159,7 +2430,10 @@
             document.getElementById('modal-step-2').style.display = 'none';
             document.getElementById('modal-title').innerText = 'Tipo de Relatório';
         }
-        function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').style.display = 'none';
+        }
 
         function showDateSelector() {
             document.getElementById('modal-step-1').style.display = 'none';
