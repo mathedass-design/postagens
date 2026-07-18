@@ -259,7 +259,7 @@
             padding: 14px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: grid;
-            grid-template-rows: 30px minmax(86px, 1fr) 34px 52px;
+            grid-template-rows: 34px minmax(96px, 1fr) 52px;
             gap: 10px;
             min-width: 0;
             width: 100%;
@@ -296,14 +296,6 @@
             overflow: hidden;
         }
 
-        .slot-card > .manual-check-wrapper {
-            margin-top: 0;
-            min-height: 34px;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-        }
-
         .slot-card > .actions {
             margin-top: 0;
             min-height: 52px;
@@ -318,8 +310,54 @@
             font-size: 1.1rem;
             font-weight: bold;
             color: var(--primary);
-            margin-bottom: 10px;
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .slot-time {
+            grid-column: 2;
+            white-space: nowrap;
             text-align: center;
+        }
+
+        .feito-toggle {
+            grid-column: 3;
+            justify-self: end;
+            position: relative;
+        }
+
+        .feito-toggle input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .feito-toggle label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 64px;
+            height: 30px;
+            padding: 0 10px;
+            border-radius: 999px;
+            border: 2px solid rgba(0,0,0,.13);
+            background: rgba(255,255,255,.72);
+            color: var(--text-main);
+            font-size: .78rem;
+            font-weight: 800;
+            cursor: pointer;
+            user-select: none;
+            transition: .18s ease;
+        }
+
+        .feito-toggle input:checked + label {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+            box-shadow: 0 2px 6px rgba(16,185,129,.25);
         }
 
         .file-upload-wrapper { margin-bottom: 0; min-height: 0; display: grid; grid-template-rows: 1fr auto; gap: 6px; overflow: hidden; }
@@ -380,26 +418,11 @@
 
         .btn-refazer:hover { background: var(--primary-hover); }
 
-        /* Checkbox de Marcação Manual */
-        .manual-check-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            color: var(--text-main);
+        .btn-save.is-refazer {
+            background: var(--primary);
         }
-
-        .manual-check-wrapper input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            accent-color: var(--success);
-        }
-
-        .manual-check-wrapper label {
-            cursor: pointer;
-            user-select: none;
+        .btn-save.is-refazer:hover {
+            background: var(--primary-hover);
         }
 
         .actions {
@@ -1023,7 +1046,6 @@
                 const areaImagem = finalizado
                     ? `<div class="slot-main">
                            <div class="status-finalizado">✅ Finalizado</div>
-                           <button class="btn-refazer" onclick="refazerSlot('${dateId}', '${time}', '${index}')">🔄 Refazer</button>
                        </div>`
                     : `<div class="slot-main">
                            <div class="file-upload-wrapper">
@@ -1036,16 +1058,22 @@
                            </div>
                        </div>`;
 
+                const actionAttrs = finalizado
+                    ? `onclick="refazerSlot('${dateId}', '${time}', '${index}')"`
+                    : `id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)"`;
+
                 const slotHTML = `
                     <div class="slot-card ${finalizado ? 'completed' : 'pending'}">
-                        <div class="slot-header">⏰ ${time}</div>
-                        ${areaImagem}
-                        <div class="manual-check-wrapper">
-                            <input type="checkbox" id="manual-${dateId}-${index}" ${slotData.manual ? 'checked' : ''}>
-                            <label for="manual-${dateId}-${index}">Já programado externamente</label>
+                        <div class="slot-header">
+                            <span class="slot-time">⏰ ${time}</span>
+                            <span class="feito-toggle">
+                                <input type="checkbox" id="manual-${dateId}-${index}" ${slotData.manual ? 'checked' : ''}>
+                                <label for="manual-${dateId}-${index}">FEITO</label>
+                            </span>
                         </div>
-                        <div class="actions ${finalizado ? 'actions-placeholder' : ''}">
-                            <button class="action-btn btn-save" ${finalizado ? 'tabindex="-1"' : `id="btn-save-${dateId}-${index}" onclick="saveSlot('${dateId}', '${time}', '${index}', event)"`}>SALVAR</button>
+                        ${areaImagem}
+                        <div class="actions">
+                            <button class="action-btn btn-save ${finalizado ? 'is-refazer' : ''}" ${actionAttrs}>${finalizado ? 'REFAZER' : 'SALVAR'}</button>
                         </div>
                     </div>`;
                 container.innerHTML += slotHTML;
@@ -1195,7 +1223,7 @@
                     refazendo: false
                 };
 
-                btn.innerText = '✅ Finalizado';
+                btn.innerText = 'SALVO!';
                 saveLocalCache();
                 renderDashboard();
 
@@ -1209,7 +1237,7 @@
                     }
                 }, imageSlot.file ? 4500 : 2000);
 
-                setTimeout(() => showDetail(dateId, dates.find(d => d.id === dateId)?.label || dateId), 700);
+                setTimeout(() => showDetail(dateId, dates.find(d => d.id === dateId)?.label || dateId), 900);
             } catch (error) {
                 console.error(error);
                 btn.innerText = '❌ Erro ao salvar';
