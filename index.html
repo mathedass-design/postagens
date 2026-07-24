@@ -1577,59 +1577,141 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            padding: 13px;
-            border: 1px solid #f59e0b;
+            padding: 15px;
+            border: 1px solid var(--note-border, #f59e0b);
             border-left-width: 5px;
-            border-radius: 11px;
-            background: var(--upload-bg);
-            color: var(--text-main);
+            border-radius: 13px;
+            background: var(--note-bg, #fef3c7);
+            color: #111827;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, .08);
+            transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
         }
+
+        .agenda-note:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, .14);
+        }
+
+        .agenda-note:focus-visible {
+            outline: 3px solid rgba(79, 70, 229, .35);
+            outline-offset: 2px;
+        }
+
+        .agenda-color-0 { --note-bg: #fef3c7; --note-border: #f59e0b; }
+        .agenda-color-1 { --note-bg: #dbeafe; --note-border: #3b82f6; }
+        .agenda-color-2 { --note-bg: #fce7f3; --note-border: #ec4899; }
+        .agenda-color-3 { --note-bg: #dcfce7; --note-border: #22c55e; }
+        .agenda-color-4 { --note-bg: #ede9fe; --note-border: #8b5cf6; }
+        .agenda-color-5 { --note-bg: #ffedd5; --note-border: #f97316; }
+        .agenda-color-6 { --note-bg: #cffafe; --note-border: #06b6d4; }
+        .agenda-color-7 { --note-bg: #fee2e2; --note-border: #ef4444; }
 
         .agenda-note.completed {
             border-color: var(--success);
-            opacity: .72;
+            filter: saturate(.55);
+            box-shadow: none;
+        }
+
+        .agenda-note.completed::before {
+            content: "CONCLUÍDO";
+            align-self: flex-start;
+            border-radius: 999px;
+            padding: 4px 8px;
+            background: #047857;
+            color: #fff;
+            font-size: .62rem;
+            font-weight: 900;
+            letter-spacing: .05em;
         }
 
         .agenda-note-text {
             flex: 1;
             white-space: pre-wrap;
             overflow-wrap: anywhere;
-            font-size: .92rem;
-            line-height: 1.4;
+            color: #111827;
+            font-size: 1.08rem;
+            font-weight: 800;
+            line-height: 1.45;
         }
 
         .agenda-note.completed .agenda-note-text {
             text-decoration: line-through;
+            text-decoration-thickness: 2px;
         }
 
         .agenda-note-meta {
-            color: var(--text-muted);
-            font-size: .69rem;
+            color: #475569;
+            font-size: .7rem;
+            font-weight: 700;
+        }
+
+        .agenda-note-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .agenda-edit-hint {
+            color: #334155;
+            font-size: .66rem;
+            font-weight: 800;
+        }
+
+        .agenda-edit-textarea {
+            width: 100%;
+            min-height: 105px;
+            resize: vertical;
+            border: 2px solid rgba(15, 23, 42, .28);
+            border-radius: 9px;
+            padding: 10px;
+            background: rgba(255, 255, 255, .78);
+            color: #111827;
+            font: inherit;
+            font-size: 1.02rem;
+            font-weight: 750;
+            line-height: 1.4;
+            outline: none;
+        }
+
+        .agenda-edit-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .15);
         }
 
         .agenda-note-actions {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
             gap: 7px;
         }
 
         .agenda-note-btn {
-            min-height: 38px;
+            min-height: 34px;
             border: 0;
             border-radius: 8px;
-            padding: 7px 10px;
+            padding: 7px 12px;
             color: white;
-            font-size: .75rem;
+            font-size: .7rem;
             font-weight: 900;
             cursor: pointer;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, .12);
+            transition: transform .14s ease, filter .14s ease;
         }
 
+        .agenda-note-btn:hover { filter: brightness(.94); }
+        .agenda-note-btn:active { transform: scale(.96); }
         .agenda-complete-btn { background: var(--success); }
         .agenda-reopen-btn { background: #64748b; }
+        .agenda-save-btn { background: var(--primary); }
+        .agenda-cancel-btn { background: #64748b; }
         .agenda-delete-btn {
-            min-width: 42px;
+            min-width: 38px;
             background: var(--danger);
-            font-size: 1rem;
+            font-size: .9rem;
         }
         .agenda-delete-btn:hover { background: var(--danger-hover); }
         .agenda-empty {
@@ -1704,12 +1786,32 @@
             }
             .agenda-note {
                 gap: 7px;
-                padding: 9px;
-                border-radius: 8px;
+                padding: 11px;
+                border-radius: 10px;
             }
-            .agenda-note-text { font-size: .78rem; }
-            .agenda-note-meta { font-size: .59rem; }
-            .agenda-note-btn { min-height: 34px; font-size: .67rem; }
+            .agenda-note:hover { transform: none; }
+            .agenda-note-text {
+                font-size: .96rem;
+                line-height: 1.4;
+            }
+            .agenda-note-meta { font-size: .61rem; }
+            .agenda-edit-hint { font-size: .59rem; }
+            .agenda-edit-textarea {
+                min-height: 92px;
+                padding: 8px;
+                font-size: .9rem;
+            }
+            .agenda-note-actions {
+                justify-content: stretch;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .agenda-note-btn {
+                width: 100%;
+                min-height: 36px;
+                font-size: .67rem;
+            }
+            .agenda-delete-btn { font-size: .85rem; }
         }
 
         @media (display-mode: standalone) and (max-width: 700px),
@@ -1764,7 +1866,7 @@
             <div class="agenda-shell">
                 <section class="agenda-form-panel">
                     <h2 class="agenda-panel-title">📝 Adicionar aviso</h2>
-                    <p class="agenda-panel-hint">Digite uma anotação para não esquecer. Ela será salva automaticamente neste aparelho.</p>
+                    <p class="agenda-panel-hint">Digite o aviso e pressione Enter para adicionar. Use Shift + Enter para pular uma linha.</p>
                     <textarea
                         id="agenda-note-input"
                         class="agenda-textarea"
@@ -1824,6 +1926,8 @@
         let drafts = [];
         let memesFolderUrl = '';
         let agendaNotes = [];
+        let editingAgendaId = null;
+        const AGENDA_COLOR_COUNT = 8;
 
         function toggleTheme() {
             const body = document.body;
@@ -2482,11 +2586,15 @@
             try {
                 const saved = JSON.parse(localStorage.getItem('plannerAgendaV1') || '[]');
                 agendaNotes = Array.isArray(saved)
-                    ? saved.filter(item => item && typeof item.text === 'string').map(item => ({
+                    ? saved.filter(item => item && typeof item.text === 'string').map((item, index) => ({
                         id: String(item.id || `${Date.now()}-${Math.random()}`),
                         text: item.text,
                         completed: Boolean(item.completed),
-                        createdAt: item.createdAt || new Date().toISOString()
+                        createdAt: item.createdAt || new Date().toISOString(),
+                        updatedAt: item.updatedAt || '',
+                        colorIndex: Number.isInteger(item.colorIndex)
+                            ? Math.abs(item.colorIndex) % AGENDA_COLOR_COUNT
+                            : index % AGENDA_COLOR_COUNT
                     }))
                     : [];
             } catch (error) {
@@ -2506,6 +2614,7 @@
 
         function showAgenda() {
             currentDetailDate = '';
+            editingAgendaId = null;
             document.body.classList.remove('detail-open', 'draft-open');
             document.body.classList.add('agenda-open');
             document.getElementById('dashboard-view').style.display = 'none';
@@ -2517,7 +2626,7 @@
         }
 
         function handleAgendaInputKeydown(event) {
-            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
                 event.preventDefault();
                 addAgendaNote();
             }
@@ -2532,11 +2641,17 @@
                 return;
             }
 
+            const previousColor = agendaNotes.length
+                ? Number(agendaNotes[0].colorIndex) || 0
+                : -1;
+
             agendaNotes.unshift({
                 id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
                 text,
                 completed: false,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                updatedAt: '',
+                colorIndex: (previousColor + 1) % AGENDA_COLOR_COUNT
             });
 
             saveAgendaNotes();
@@ -2549,6 +2664,7 @@
             const note = agendaNotes.find(item => String(item.id) === String(id));
             if (!note) return;
             note.completed = !note.completed;
+            if (String(editingAgendaId) === String(id)) editingAgendaId = null;
             saveAgendaNotes();
             renderAgendaNotes();
         }
@@ -2558,8 +2674,60 @@
             if (!note) return;
             if (!confirm('Apagar este aviso da Agenda?')) return;
             agendaNotes = agendaNotes.filter(item => String(item.id) !== String(id));
+            if (String(editingAgendaId) === String(id)) editingAgendaId = null;
             saveAgendaNotes();
             renderAgendaNotes();
+        }
+
+        function startAgendaEdit(id) {
+            const note = agendaNotes.find(item => String(item.id) === String(id));
+            if (!note) return;
+            editingAgendaId = String(id);
+            renderAgendaNotes();
+            setTimeout(() => {
+                const editor = document.getElementById(`agenda-editor-${id}`);
+                if (!editor) return;
+                editor.focus();
+                if (typeof editor.setSelectionRange === 'function') {
+                    editor.setSelectionRange(editor.value.length, editor.value.length);
+                }
+            }, 0);
+        }
+
+        function cancelAgendaEdit() {
+            editingAgendaId = null;
+            renderAgendaNotes();
+        }
+
+        function saveAgendaEdit(id) {
+            const note = agendaNotes.find(item => String(item.id) === String(id));
+            const editor = document.getElementById(`agenda-editor-${id}`);
+            if (!note || !editor) return;
+
+            const text = String(editor.value || '').trim();
+            if (!text) {
+                alert('O aviso não pode ficar vazio.');
+                editor.focus();
+                return;
+            }
+
+            note.text = text;
+            note.updatedAt = new Date().toISOString();
+            editingAgendaId = null;
+            saveAgendaNotes();
+            renderAgendaNotes();
+        }
+
+        function handleAgendaEditKeydown(event, id) {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                cancelAgendaEdit();
+                return;
+            }
+            if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+                event.preventDefault();
+                saveAgendaEdit(id);
+            }
         }
 
         function formatAgendaDate(value) {
@@ -2593,27 +2761,83 @@
             });
 
             orderedNotes.forEach(note => {
+                const isEditing = String(editingAgendaId) === String(note.id);
                 const card = document.createElement('article');
-                card.className = `agenda-note ${note.completed ? 'completed' : ''}`;
+                card.className = `agenda-note agenda-color-${note.colorIndex} ${note.completed ? 'completed' : ''}`;
+                card.tabIndex = 0;
+                card.title = isEditing
+                    ? 'Pressione Enter para salvar ou Shift + Enter para pular linha'
+                    : 'Clique duas vezes para editar este aviso';
+                card.ondblclick = event => {
+                    if (event.target.closest('button, textarea')) return;
+                    startAgendaEdit(note.id);
+                };
 
-                const text = document.createElement('div');
-                text.className = 'agenda-note-text';
-                text.textContent = note.text;
+                let content;
+                if (isEditing) {
+                    content = document.createElement('textarea');
+                    content.id = `agenda-editor-${note.id}`;
+                    content.className = 'agenda-edit-textarea';
+                    content.maxLength = 1000;
+                    content.value = note.text;
+                    content.onkeydown = event => handleAgendaEditKeydown(event, note.id);
+                    content.ondblclick = event => event.stopPropagation();
+                } else {
+                    content = document.createElement('div');
+                    content.className = 'agenda-note-text';
+                    content.textContent = note.text;
+                }
 
+                const info = document.createElement('div');
+                info.className = 'agenda-note-info';
                 const meta = document.createElement('div');
                 meta.className = 'agenda-note-meta';
+                const editedText = note.updatedAt ? ` • editado em ${formatAgendaDate(note.updatedAt)}` : '';
                 meta.textContent = note.completed
-                    ? `✅ Concluído • criado em ${formatAgendaDate(note.createdAt)}`
-                    : `⏳ Pendente • criado em ${formatAgendaDate(note.createdAt)}`;
+                    ? `✅ Concluído • criado em ${formatAgendaDate(note.createdAt)}${editedText}`
+                    : `⏳ Pendente • criado em ${formatAgendaDate(note.createdAt)}${editedText}`;
+
+                const hint = document.createElement('span');
+                hint.className = 'agenda-edit-hint';
+                hint.textContent = isEditing
+                    ? 'Enter salva • Shift + Enter pula linha'
+                    : '✏️ 2 cliques para editar';
+
+                info.append(meta, hint);
 
                 const actions = document.createElement('div');
                 actions.className = 'agenda-note-actions';
+
+                if (isEditing) {
+                    const saveButton = document.createElement('button');
+                    saveButton.type = 'button';
+                    saveButton.className = 'agenda-note-btn agenda-save-btn';
+                    saveButton.textContent = '💾 SALVAR';
+                    saveButton.onclick = event => {
+                        event.stopPropagation();
+                        saveAgendaEdit(note.id);
+                    };
+
+                    const cancelButton = document.createElement('button');
+                    cancelButton.type = 'button';
+                    cancelButton.className = 'agenda-note-btn agenda-cancel-btn';
+                    cancelButton.textContent = 'CANCELAR';
+                    cancelButton.onclick = event => {
+                        event.stopPropagation();
+                        cancelAgendaEdit();
+                    };
+
+                    actions.append(saveButton, cancelButton);
+                }
 
                 const completeButton = document.createElement('button');
                 completeButton.type = 'button';
                 completeButton.className = `agenda-note-btn ${note.completed ? 'agenda-reopen-btn' : 'agenda-complete-btn'}`;
                 completeButton.textContent = note.completed ? '↩ REABRIR' : '✓ CONCLUIR';
-                completeButton.onclick = () => toggleAgendaNote(note.id);
+                completeButton.onclick = event => {
+                    event.stopPropagation();
+                    toggleAgendaNote(note.id);
+                };
 
                 const deleteButton = document.createElement('button');
                 deleteButton.type = 'button';
@@ -2621,10 +2845,13 @@
                 deleteButton.title = 'Apagar aviso';
                 deleteButton.setAttribute('aria-label', 'Apagar aviso');
                 deleteButton.textContent = '🗑';
-                deleteButton.onclick = () => deleteAgendaNote(note.id);
+                deleteButton.onclick = event => {
+                    event.stopPropagation();
+                    deleteAgendaNote(note.id);
+                };
 
                 actions.append(completeButton, deleteButton);
-                card.append(text, meta, actions);
+                card.append(content, info, actions);
                 box.appendChild(card);
             });
         }
