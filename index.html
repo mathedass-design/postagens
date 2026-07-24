@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>PLANEJAMENTO</title>
+    <!-- Versão com Agenda sincronizada entre computador e celular -->
 
     <!-- Ícones: o parâmetro v evita que o navegador use o ícone antigo em cache -->
     <link rel="icon" type="image/png" sizes="32x32" href="./logo.png?v=4">
@@ -1562,6 +1563,39 @@
             font-weight: 800;
         }
 
+        .agenda-list-badges {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .agenda-sync-status {
+            flex: 0 0 auto;
+            border-radius: 999px;
+            padding: 5px 9px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-size: .7rem;
+            font-weight: 900;
+        }
+
+        .agenda-sync-status.syncing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .agenda-sync-status.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .agenda-sync-status.synced {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
         .agenda-notes {
             min-height: 0;
             overflow-y: auto;
@@ -1780,6 +1814,8 @@
                 font-size: .76rem;
             }
             .agenda-count { padding: 4px 7px; font-size: .61rem; }
+            .agenda-list-badges { gap: 4px; }
+            .agenda-sync-status { padding: 4px 7px; font-size: .59rem; }
             .agenda-notes {
                 grid-template-columns: 1fr;
                 gap: 7px;
@@ -1880,7 +1916,10 @@
                 <section class="agenda-list-panel">
                     <div class="agenda-list-title-row">
                         <h2 class="agenda-panel-title">📌 Lista de avisos</h2>
-                        <span id="agenda-count" class="agenda-count">0 pendentes</span>
+                        <div class="agenda-list-badges">
+                            <span id="agenda-sync-status" class="agenda-sync-status">☁️ Preparando...</span>
+                            <span id="agenda-count" class="agenda-count">0 pendentes</span>
+                        </div>
                     </div>
                     <div id="agenda-notes" class="agenda-notes"></div>
                 </section>
@@ -1927,7 +1966,61 @@
         let memesFolderUrl = '';
         let agendaNotes = [];
         let editingAgendaId = null;
+        let agendaPendingOperations = [];
+        let agendaSyncInProgress = false;
+        let cloudLoadInProgress = false;
+        let cloudReloadRequested = false;
         const AGENDA_COLOR_COUNT = 8;
+        const AGENDA_CACHE_KEY = 'plannerAgendaV1';
+        const AGENDA_PENDING_KEY = 'plannerAgendaPendingV1';
+
+        function normalizeAgendaNote(item, index = 0) {
+            const colorValue = item?.colorIndex ?? item?.cor;
+            const parsedColor = Number(colorValue);
+            return {
+                id: String(item?.id || `${Date.now()}-${Math.random()}`),
+                text: String(item?.text ?? item?.texto ?? ''),
+                completed: Boolean(item?.completed ?? item?.concluido),
+                createdAt: item?.createdAt || item?.criado_em || new Date().toISOString(),
+                updatedAt: item?.updatedAt || item?.atualizado_em || '',
+                colorIndex: Number.isFinite(parsedColor)
+                    ? Math.abs(Math.trunc(parsedColor)) % AGENDA_COLOR_COUNT
+                    : index % AGENDA_COLOR_COUNT,
+                deleted: Boolean(item?.deleted ?? item?.excluido)
+            };
+        }
+
+        function agendaNoteToCloudPayload(note) {
+            return {
+                acao: 'salvar_aviso_agenda',
+                id: String(note.id),
+                texto: String(note.text || '').trim(),
+                concluido: Boolean(note.completed),
+                criado_em: note.createdAt || new Date().toISOString(),
+                atualizado_em: note.updatedAt || note.createdAt || new Date().toISOString(),
+                cor: Number(note.colorIndex) || 0
+            };
+        }
+
+        function setAgendaSyncStatus(status) {
+            const badge = document.getElementById('agenda-sync-status');
+            if (!badge) return;
+            badge.classList.remove('syncing', 'offline', 'synced');
+
+            if (status === 'syncing') {
+                badge.classList.add('syncing');
+                badge.textContent = '⏳ Sincronizando...';
+            } else if (status === 'offline') {
+                badge.classList.add('offline');
+                badge.textContent = '⚠️ Salvo no aparelho';
+            } else if (status === 'local') {
+                badge.classList.add('offline');
+                badge.textContent = '⚠️ Planilha pendente';
+            } else {
+                badge.classList.add('synced');
+                badge.textContent = '☁️ Sincronizado';
+            }
+        }
 
         function setBrowserTabTitle(title) {
             document.title = String(title || 'AGENDA').toUpperCase();
@@ -2049,11 +2142,19 @@
         }
 
         async function loadFromCloud({ silent = false } = {}) {
+            if (cloudLoadInProgress) {
+                cloudReloadRequested = true;
+                return;
+            }
+            cloudLoadInProgress = true;
             const title = document.querySelector('.global-header h1');
             const originalTitle = 'AGENDA';
             if (!silent) title.innerText = 'Sincronizando...';
+            setAgendaSyncStatus('syncing');
 
             try {
+                await flushAgendaPendingOperations();
+
                 const response = await fetch(`${API_URL}?t=${Date.now()}`, {
                     method: 'GET',
                     cache: 'no-store',
@@ -2070,6 +2171,12 @@
                 drafts = Array.isArray(result.rascunhos) ? result.rascunhos : drafts;
                 updateDriveButton();
                 renderDrafts();
+
+                if (Array.isArray(result.agenda)) {
+                    applyCloudAgenda(result.agenda);
+                } else {
+                    setAgendaSyncStatus('local');
+                }
 
                 (result.postagens || []).forEach(post => {
                     const dateId = normalizeDateId(post.data);
@@ -2103,11 +2210,17 @@
                 }
             } catch (error) {
                 console.error(error);
+                setAgendaSyncStatus('offline');
                 if (!silent) {
                     alert('O programa abriu com os dados salvos neste aparelho, mas não conseguiu sincronizar com a nuvem agora.');
                 }
             } finally {
+                cloudLoadInProgress = false;
                 title.innerText = originalTitle;
+                if (cloudReloadRequested) {
+                    cloudReloadRequested = false;
+                    setTimeout(() => loadFromCloud({ silent: true }), 0);
+                }
             }
         }
 
@@ -2604,18 +2717,12 @@
 
         function loadAgendaNotes() {
             try {
-                const saved = JSON.parse(localStorage.getItem('plannerAgendaV1') || '[]');
+                const saved = JSON.parse(localStorage.getItem(AGENDA_CACHE_KEY) || '[]');
                 agendaNotes = Array.isArray(saved)
-                    ? saved.filter(item => item && typeof item.text === 'string').map((item, index) => ({
-                        id: String(item.id || `${Date.now()}-${Math.random()}`),
-                        text: item.text,
-                        completed: Boolean(item.completed),
-                        createdAt: item.createdAt || new Date().toISOString(),
-                        updatedAt: item.updatedAt || '',
-                        colorIndex: Number.isInteger(item.colorIndex)
-                            ? Math.abs(item.colorIndex) % AGENDA_COLOR_COUNT
-                            : index % AGENDA_COLOR_COUNT
-                    }))
+                    ? saved
+                        .filter(item => item && typeof item.text === 'string')
+                        .map((item, index) => normalizeAgendaNote(item, index))
+                        .filter(item => !item.deleted && item.text.trim())
                     : [];
             } catch (error) {
                 console.warn('Não foi possível carregar os avisos da Agenda.', error);
@@ -2625,11 +2732,134 @@
 
         function saveAgendaNotes() {
             try {
-                localStorage.setItem('plannerAgendaV1', JSON.stringify(agendaNotes));
+                localStorage.setItem(AGENDA_CACHE_KEY, JSON.stringify(agendaNotes));
             } catch (error) {
                 console.warn('Não foi possível salvar os avisos da Agenda.', error);
                 alert('Não foi possível salvar este aviso no aparelho.');
             }
+        }
+
+        function loadAgendaPendingOperations() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(AGENDA_PENDING_KEY) || '[]');
+                agendaPendingOperations = Array.isArray(saved)
+                    ? saved.filter(item => item?.token && item?.id && item?.payload)
+                    : [];
+            } catch (error) {
+                console.warn('Não foi possível carregar a fila de sincronização da Agenda.', error);
+                agendaPendingOperations = [];
+            }
+        }
+
+        function saveAgendaPendingOperations() {
+            try {
+                localStorage.setItem(AGENDA_PENDING_KEY, JSON.stringify(agendaPendingOperations));
+            } catch (error) {
+                console.warn('Não foi possível salvar a fila de sincronização da Agenda.', error);
+            }
+        }
+
+        function queueAgendaCloudOperation(payload, { flush = true } = {}) {
+            const id = String(payload?.id || '').trim();
+            if (!id) return;
+
+            const operation = {
+                token: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                id,
+                payload,
+                queuedAt: new Date().toISOString()
+            };
+
+            // Para cada aviso, mantém somente a alteração local mais recente.
+            agendaPendingOperations = agendaPendingOperations.filter(item => String(item.id) !== id);
+            agendaPendingOperations.push(operation);
+            saveAgendaPendingOperations();
+            setAgendaSyncStatus('syncing');
+
+            if (flush) {
+                flushAgendaPendingOperations();
+            }
+        }
+
+        async function flushAgendaPendingOperations() {
+            if (agendaSyncInProgress) return false;
+            if (!agendaPendingOperations.length) {
+                setAgendaSyncStatus('synced');
+                return true;
+            }
+
+            agendaSyncInProgress = true;
+            setAgendaSyncStatus('syncing');
+
+            try {
+                while (agendaPendingOperations.length) {
+                    const operation = agendaPendingOperations[0];
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        redirect: 'follow',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(operation.payload)
+                    });
+
+                    agendaPendingOperations = agendaPendingOperations.filter(
+                        item => item.token !== operation.token
+                    );
+                    saveAgendaPendingOperations();
+                }
+
+                setAgendaSyncStatus('synced');
+                return true;
+            } catch (error) {
+                console.error('Não foi possível sincronizar a Agenda.', error);
+                setAgendaSyncStatus('offline');
+                return false;
+            } finally {
+                agendaSyncInProgress = false;
+            }
+        }
+
+        function applyCloudAgenda(rawAgenda) {
+            const records = rawAgenda.map((item, index) => normalizeAgendaNote(item, index));
+
+            // Primeira ativação da nuvem: envia os avisos que já existiam neste aparelho.
+            if (!records.length && agendaNotes.length) {
+                agendaNotes.forEach(note => {
+                    queueAgendaCloudOperation(agendaNoteToCloudPayload(note), { flush: false });
+                });
+                saveAgendaNotes();
+                renderAgendaNotes();
+                flushAgendaPendingOperations();
+                return;
+            }
+
+            const merged = new Map();
+            records.forEach(record => {
+                if (record.deleted || !record.text.trim()) {
+                    merged.delete(String(record.id));
+                } else {
+                    merged.set(String(record.id), record);
+                }
+            });
+
+            // Alterações ainda não enviadas ficam por cima da cópia recebida.
+            agendaPendingOperations.forEach(operation => {
+                const id = String(operation.id);
+                if (operation.payload.acao === 'excluir_aviso_agenda') {
+                    merged.delete(id);
+                    return;
+                }
+
+                const localNote = agendaNotes.find(note => String(note.id) === id);
+                if (localNote) {
+                    merged.set(id, normalizeAgendaNote(localNote));
+                }
+            });
+
+            agendaNotes = Array.from(merged.values());
+            saveAgendaNotes();
+            renderAgendaNotes();
+            setAgendaSyncStatus(agendaPendingOperations.length ? 'syncing' : 'synced');
         }
 
         function showAgenda() {
@@ -2643,6 +2873,8 @@
             document.getElementById('draft-view').style.display = 'none';
             document.getElementById('agenda-view').style.display = 'block';
             renderAgendaNotes();
+            setAgendaSyncStatus(agendaPendingOperations.length ? 'syncing' : 'synced');
+            loadFromCloud({ silent: true });
             setTimeout(() => document.getElementById('agenda-note-input')?.focus(), 50);
         }
 
@@ -2666,16 +2898,19 @@
                 ? Number(agendaNotes[0].colorIndex) || 0
                 : -1;
 
-            agendaNotes.unshift({
+            const note = {
                 id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
                 text,
                 completed: false,
                 createdAt: new Date().toISOString(),
                 updatedAt: '',
                 colorIndex: (previousColor + 1) % AGENDA_COLOR_COUNT
-            });
+            };
+
+            agendaNotes.unshift(note);
 
             saveAgendaNotes();
+            queueAgendaCloudOperation(agendaNoteToCloudPayload(note));
             input.value = '';
             renderAgendaNotes();
             input.focus();
@@ -2685,8 +2920,10 @@
             const note = agendaNotes.find(item => String(item.id) === String(id));
             if (!note) return;
             note.completed = !note.completed;
+            note.updatedAt = new Date().toISOString();
             if (String(editingAgendaId) === String(id)) editingAgendaId = null;
             saveAgendaNotes();
+            queueAgendaCloudOperation(agendaNoteToCloudPayload(note));
             renderAgendaNotes();
         }
 
@@ -2694,9 +2931,15 @@
             const note = agendaNotes.find(item => String(item.id) === String(id));
             if (!note) return;
             if (!confirm('Apagar este aviso da Agenda?')) return;
+            const deletedAt = new Date().toISOString();
             agendaNotes = agendaNotes.filter(item => String(item.id) !== String(id));
             if (String(editingAgendaId) === String(id)) editingAgendaId = null;
             saveAgendaNotes();
+            queueAgendaCloudOperation({
+                acao: 'excluir_aviso_agenda',
+                id: String(id),
+                atualizado_em: deletedAt
+            });
             renderAgendaNotes();
         }
 
@@ -2736,6 +2979,7 @@
             note.updatedAt = new Date().toISOString();
             editingAgendaId = null;
             saveAgendaNotes();
+            queueAgendaCloudOperation(agendaNoteToCloudPayload(note));
             renderAgendaNotes();
         }
 
@@ -3221,13 +3465,23 @@
             dates = generateDates();
             loadLocalCache();
             loadAgendaNotes();
+            loadAgendaPendingOperations();
             renderDashboard();
             renderDrafts();
             renderAgendaNotes();
+            setAgendaSyncStatus(agendaPendingOperations.length ? 'syncing' : 'synced');
             updateDriveButton();
 
             // Sincroniza em segundo plano sem segurar a abertura da tela.
             setTimeout(() => loadFromCloud({ silent: true }), 100);
+
+            // Ao voltar para o programa, busca as alterações feitas no outro aparelho.
+            window.addEventListener('focus', () => loadFromCloud({ silent: true }));
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    loadFromCloud({ silent: true });
+                }
+            });
         }
 
         initializeApp();
