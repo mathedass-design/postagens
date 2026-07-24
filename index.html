@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Planejador de Posts</title>
+    <title>AGENDA</title>
 
     <!-- Ícones: o parâmetro v evita que o navegador use o ícone antigo em cache -->
     <link rel="icon" type="image/png" sizes="32x32" href="./logo.png?v=4">
@@ -13,8 +13,8 @@
     <link rel="manifest" href="./manifest.webmanifest?v=4">
 
     <meta name="theme-color" content="#1e1e2f">
-    <meta name="application-name" content="Planejador de Posts">
-    <meta name="apple-mobile-web-app-title" content="Planejador">
+    <meta name="application-name" content="AGENDA">
+    <meta name="apple-mobile-web-app-title" content="AGENDA">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1724,9 +1724,9 @@
 <body>
 
     <header class="global-header">
-        <h1>Gerenciador de Mídias</h1>
+        <h1>AGENDA</h1>
         <div class="header-actions">
-            <button class="btn-header btn-home-header" onclick="showDashboard()">🏠 Início</button>
+            <button class="btn-header btn-home-header" onclick="showDashboard()">📅 Planejador</button>
             <button class="btn-header" onclick="showMemes()">😂 Memes</button>
             <button class="btn-header btn-agenda-header" onclick="showAgenda()">🗓️ Agenda</button>
             <button class="btn-header btn-drive-header" id="btn-drive" onclick="openDriveFolder()" disabled>📂 Drive</button>
@@ -1753,7 +1753,7 @@
                 <section class="draft-list-panel memes-list-panel">
                     <div class="memes-title-row">
                         <h2>😂 Memes — textos salvos</h2>
-                        <button class="back-btn memes-back" onclick="showDashboard()">⬅ Início</button>
+                        <button class="back-btn memes-back" onclick="showDashboard()">⬅ Planejador</button>
                     </div>
                     <div id="draft-cards" class="draft-cards"></div>
                 </section>
@@ -1929,7 +1929,7 @@
 
         async function loadFromCloud({ silent = false } = {}) {
             const title = document.querySelector('.global-header h1');
-            const originalTitle = 'Gerenciador de Mídias';
+            const originalTitle = 'AGENDA';
             if (!silent) title.innerText = 'Sincronizando...';
 
             try {
