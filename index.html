@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AGENDA</title>
+    <title>PLANEJAMENTO</title>
 
     <!-- Ícones: o parâmetro v evita que o navegador use o ícone antigo em cache -->
     <link rel="icon" type="image/png" sizes="32x32" href="./logo.png?v=4">
@@ -1929,6 +1929,23 @@
         let editingAgendaId = null;
         const AGENDA_COLOR_COUNT = 8;
 
+        function setBrowserTabTitle(title) {
+            document.title = String(title || 'AGENDA').toUpperCase();
+        }
+
+        function restoreCurrentTabTitle() {
+            const agendaVisible = document.getElementById('agenda-view')?.style.display === 'block';
+            const memesVisible = document.getElementById('draft-view')?.style.display === 'block';
+
+            if (agendaVisible) {
+                setBrowserTabTitle('AGENDA');
+            } else if (memesVisible) {
+                setBrowserTabTitle('MEMES');
+            } else {
+                setBrowserTabTitle('PLANEJAMENTO');
+            }
+        }
+
         function toggleTheme() {
             const body = document.body;
             const isDark = body.getAttribute('data-theme') === 'dark';
@@ -2195,6 +2212,7 @@
 
         function showDetail(dateId, dateLabel) {
             currentDetailDate = dateId;
+            setBrowserTabTitle('PLANEJAMENTO');
             document.body.classList.add('detail-open');
             document.body.classList.remove('draft-open', 'agenda-open');
             document.getElementById('dashboard-view').style.display = 'none';
@@ -2261,6 +2279,7 @@
 
         function showDashboard() {
             currentDetailDate = '';
+            setBrowserTabTitle('PLANEJAMENTO');
             document.body.classList.remove('detail-open', 'draft-open', 'agenda-open');
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('draft-view').style.display = 'none';
@@ -2573,6 +2592,7 @@
 
         function showMemes() {
             currentDetailDate = '';
+            setBrowserTabTitle('MEMES');
             document.body.classList.remove('detail-open', 'agenda-open');
             document.body.classList.add('draft-open');
             document.getElementById('dashboard-view').style.display = 'none';
@@ -2615,6 +2635,7 @@
         function showAgenda() {
             currentDetailDate = '';
             editingAgendaId = null;
+            setBrowserTabTitle('AGENDA');
             document.body.classList.remove('detail-open', 'draft-open');
             document.body.classList.add('agenda-open');
             document.getElementById('dashboard-view').style.display = 'none';
@@ -3101,6 +3122,7 @@
         }
 
         function openReportModal() {
+            setBrowserTabTitle('RELATÓRIO');
             document.getElementById('report-modal').style.display = 'flex';
             document.getElementById('modal-step-1').style.display = 'grid';
             document.getElementById('modal-step-2').style.display = 'none';
@@ -3109,6 +3131,7 @@
 
         function closeReportModal() {
             document.getElementById('report-modal').style.display = 'none';
+            restoreCurrentTabTitle();
         }
 
         function showDateSelector() {
@@ -3194,6 +3217,7 @@
         }
 
         function initializeApp() {
+            setBrowserTabTitle('PLANEJAMENTO');
             dates = generateDates();
             loadLocalCache();
             loadAgendaNotes();
