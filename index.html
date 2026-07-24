@@ -1559,16 +1559,6 @@
             gap: 10px;
         }
 
-        .agenda-count {
-            flex: 0 0 auto;
-            border-radius: 999px;
-            padding: 5px 9px;
-            background: var(--badge-bg);
-            color: var(--text-muted);
-            font-size: .72rem;
-            font-weight: 800;
-        }
-
         .agenda-list-badges {
             display: flex;
             align-items: center;
@@ -1605,32 +1595,34 @@
         .agenda-notes {
             min-height: 0;
             overflow-y: auto;
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            display: flex;
+            flex-direction: column;
             align-content: start;
-            gap: 10px;
+            gap: 6px;
             padding-right: 3px;
         }
 
         .agenda-note {
             min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 15px;
+            min-height: 52px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: stretch;
+            gap: 7px;
+            padding: 5px 6px 5px 13px;
             border: 1px solid var(--note-border, #f59e0b);
-            border-left-width: 5px;
-            border-radius: 13px;
+            border-left: 5px solid var(--note-border, #f59e0b);
+            border-radius: 10px;
             background: var(--note-bg, #fef3c7);
             color: #111827;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, .08);
+            box-shadow: 0 2px 7px rgba(15, 23, 42, .08);
             transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
         }
 
         .agenda-note:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, .14);
+            transform: translateX(2px);
+            box-shadow: 0 4px 11px rgba(15, 23, 42, .13);
         }
 
         .agenda-note:focus-visible {
@@ -1648,71 +1640,42 @@
         .agenda-color-7 { --note-bg: #fee2e2; --note-border: #ef4444; }
 
         .agenda-note.completed {
-            border-color: var(--success);
-            filter: saturate(.55);
             box-shadow: none;
         }
 
-        .agenda-note.completed::before {
-            content: "CONCLUÍDO";
-            align-self: flex-start;
-            border-radius: 999px;
-            padding: 4px 8px;
-            background: #047857;
-            color: #fff;
-            font-size: .62rem;
-            font-weight: 900;
-            letter-spacing: .05em;
-        }
-
         .agenda-note-text {
-            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
             white-space: pre-wrap;
             overflow-wrap: anywhere;
             color: #111827;
-            font-size: 1.08rem;
+            font-size: 1rem;
             font-weight: 800;
-            line-height: 1.45;
+            line-height: 1.3;
+            padding: 5px 0;
         }
 
         .agenda-note.completed .agenda-note-text {
             text-decoration: line-through;
             text-decoration-thickness: 2px;
-        }
-
-        .agenda-note-meta {
-            color: #475569;
-            font-size: .7rem;
-            font-weight: 700;
-        }
-
-        .agenda-note-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .agenda-edit-hint {
-            color: #334155;
-            font-size: .66rem;
-            font-weight: 800;
+            opacity: .58;
         }
 
         .agenda-edit-textarea {
             width: 100%;
-            min-height: 105px;
+            min-height: 42px;
+            max-height: 150px;
             resize: vertical;
             border: 2px solid rgba(15, 23, 42, .28);
-            border-radius: 9px;
-            padding: 10px;
+            border-radius: 7px;
+            padding: 8px 9px;
             background: rgba(255, 255, 255, .78);
             color: #111827;
             font: inherit;
-            font-size: 1.02rem;
-            font-weight: 750;
-            line-height: 1.4;
+            font-size: .96rem;
+            font-weight: 800;
+            line-height: 1.3;
             outline: none;
         }
 
@@ -1722,20 +1685,24 @@
         }
 
         .agenda-note-actions {
-            display: flex;
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 50px;
             align-items: center;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-            gap: 7px;
+            justify-content: end;
+            gap: 4px;
         }
 
         .agenda-note-btn {
-            min-height: 34px;
+            width: 50px;
+            min-width: 50px;
+            height: 100%;
+            min-height: 40px;
             border: 0;
-            border-radius: 8px;
-            padding: 7px 12px;
+            border-radius: 9px;
+            padding: 5px;
             color: white;
-            font-size: .7rem;
+            font-size: 1.05rem;
             font-weight: 900;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(15, 23, 42, .12);
@@ -1749,9 +1716,8 @@
         .agenda-save-btn { background: var(--primary); }
         .agenda-cancel-btn { background: #64748b; }
         .agenda-delete-btn {
-            min-width: 38px;
             background: var(--danger);
-            font-size: .9rem;
+            font-size: 1rem;
         }
         .agenda-delete-btn:hover { background: var(--danger-hover); }
         .agenda-empty {
@@ -1819,39 +1785,38 @@
                 padding: 7px;
                 font-size: .76rem;
             }
-            .agenda-count { padding: 4px 7px; font-size: .61rem; }
             .agenda-list-badges { gap: 4px; }
             .agenda-sync-status { padding: 4px 7px; font-size: .59rem; }
             .agenda-notes {
-                grid-template-columns: 1fr;
-                gap: 7px;
+                gap: 5px;
             }
             .agenda-note {
-                gap: 7px;
-                padding: 11px;
-                border-radius: 10px;
+                min-height: 48px;
+                gap: 4px;
+                padding: 4px 5px 4px 9px;
+                border-left-width: 4px;
+                border-radius: 8px;
             }
             .agenda-note:hover { transform: none; }
             .agenda-note-text {
-                font-size: .96rem;
-                line-height: 1.4;
+                font-size: .88rem;
+                line-height: 1.25;
             }
-            .agenda-note-meta { font-size: .61rem; }
-            .agenda-edit-hint { font-size: .59rem; }
             .agenda-edit-textarea {
-                min-height: 92px;
-                padding: 8px;
-                font-size: .9rem;
+                min-height: 40px;
+                padding: 7px;
+                font-size: .86rem;
             }
             .agenda-note-actions {
-                justify-content: stretch;
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
+                grid-auto-columns: 43px;
+                gap: 3px;
             }
             .agenda-note-btn {
-                width: 100%;
-                min-height: 36px;
-                font-size: .67rem;
+                width: 43px;
+                min-width: 43px;
+                min-height: 38px;
+                font-size: .95rem;
+                border-radius: 7px;
             }
             .agenda-delete-btn { font-size: .85rem; }
         }
@@ -1925,7 +1890,6 @@
                         <h2 class="agenda-panel-title">📌 Lista de avisos</h2>
                         <div class="agenda-list-badges">
                             <span id="agenda-sync-status" class="agenda-sync-status">☁️ Preparando...</span>
-                            <span id="agenda-count" class="agenda-count">0 pendentes</span>
                         </div>
                     </div>
                     <div id="agenda-notes" class="agenda-notes"></div>
@@ -3057,24 +3021,9 @@
             }
         }
 
-        function formatAgendaDate(value) {
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return '';
-            return date.toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
         function renderAgendaNotes() {
             const box = document.getElementById('agenda-notes');
-            const count = document.getElementById('agenda-count');
-            if (!box || !count) return;
-
-            const pendingCount = agendaNotes.filter(item => !item.completed).length;
-            count.textContent = `${pendingCount} ${pendingCount === 1 ? 'pendente' : 'pendentes'}`;
+            if (!box) return;
             box.innerHTML = '';
 
             if (!agendaNotes.length) {
@@ -3115,23 +3064,6 @@
                     content.textContent = note.text;
                 }
 
-                const info = document.createElement('div');
-                info.className = 'agenda-note-info';
-                const meta = document.createElement('div');
-                meta.className = 'agenda-note-meta';
-                const editedText = note.updatedAt ? ` • editado em ${formatAgendaDate(note.updatedAt)}` : '';
-                meta.textContent = note.completed
-                    ? `✅ Concluído • criado em ${formatAgendaDate(note.createdAt)}${editedText}`
-                    : `⏳ Pendente • criado em ${formatAgendaDate(note.createdAt)}${editedText}`;
-
-                const hint = document.createElement('span');
-                hint.className = 'agenda-edit-hint';
-                hint.textContent = isEditing
-                    ? 'Enter salva • Shift + Enter pula linha'
-                    : '✏️ 2 cliques para editar';
-
-                info.append(meta, hint);
-
                 const actions = document.createElement('div');
                 actions.className = 'agenda-note-actions';
 
@@ -3139,7 +3071,9 @@
                     const saveButton = document.createElement('button');
                     saveButton.type = 'button';
                     saveButton.className = 'agenda-note-btn agenda-save-btn';
-                    saveButton.textContent = '💾 SALVAR';
+                    saveButton.title = 'Salvar alteração';
+                    saveButton.setAttribute('aria-label', 'Salvar alteração');
+                    saveButton.textContent = '💾';
                     saveButton.onclick = event => {
                         event.stopPropagation();
                         saveAgendaEdit(note.id);
@@ -3148,37 +3082,42 @@
                     const cancelButton = document.createElement('button');
                     cancelButton.type = 'button';
                     cancelButton.className = 'agenda-note-btn agenda-cancel-btn';
-                    cancelButton.textContent = 'CANCELAR';
+                    cancelButton.title = 'Cancelar edição';
+                    cancelButton.setAttribute('aria-label', 'Cancelar edição');
+                    cancelButton.textContent = '✕';
                     cancelButton.onclick = event => {
                         event.stopPropagation();
                         cancelAgendaEdit();
                     };
 
                     actions.append(saveButton, cancelButton);
+                } else {
+                    const completeButton = document.createElement('button');
+                    completeButton.type = 'button';
+                    completeButton.className = `agenda-note-btn ${note.completed ? 'agenda-reopen-btn' : 'agenda-complete-btn'}`;
+                    completeButton.title = note.completed ? 'Reabrir aviso' : 'Concluir aviso';
+                    completeButton.setAttribute('aria-label', note.completed ? 'Reabrir aviso' : 'Concluir aviso');
+                    completeButton.textContent = note.completed ? '↩' : '✓';
+                    completeButton.onclick = event => {
+                        event.stopPropagation();
+                        toggleAgendaNote(note.id);
+                    };
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.type = 'button';
+                    deleteButton.className = 'agenda-note-btn agenda-delete-btn';
+                    deleteButton.title = 'Apagar aviso';
+                    deleteButton.setAttribute('aria-label', 'Apagar aviso');
+                    deleteButton.textContent = '🗑';
+                    deleteButton.onclick = event => {
+                        event.stopPropagation();
+                        deleteAgendaNote(note.id);
+                    };
+
+                    actions.append(completeButton, deleteButton);
                 }
 
-                const completeButton = document.createElement('button');
-                completeButton.type = 'button';
-                completeButton.className = `agenda-note-btn ${note.completed ? 'agenda-reopen-btn' : 'agenda-complete-btn'}`;
-                completeButton.textContent = note.completed ? '↩ REABRIR' : '✓ CONCLUIR';
-                completeButton.onclick = event => {
-                    event.stopPropagation();
-                    toggleAgendaNote(note.id);
-                };
-
-                const deleteButton = document.createElement('button');
-                deleteButton.type = 'button';
-                deleteButton.className = 'agenda-note-btn agenda-delete-btn';
-                deleteButton.title = 'Apagar aviso';
-                deleteButton.setAttribute('aria-label', 'Apagar aviso');
-                deleteButton.textContent = '🗑';
-                deleteButton.onclick = event => {
-                    event.stopPropagation();
-                    deleteAgendaNote(note.id);
-                };
-
-                actions.append(completeButton, deleteButton);
-                card.append(content, info, actions);
+                card.append(content, actions);
                 box.appendChild(card);
             });
         }
