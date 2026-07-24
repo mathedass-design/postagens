@@ -1567,6 +1567,21 @@
             flex-wrap: wrap;
         }
 
+        .agenda-print-btn {
+            width: 100%;
+            min-height: 44px;
+            border: 0;
+            border-radius: 10px;
+            padding: 8px 12px;
+            background: #334155;
+            color: #fff;
+            font-size: .84rem;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .agenda-print-btn:hover { background: #1e293b; }
+
         .agenda-sync-status {
             flex: 0 0 auto;
             border-radius: 999px;
@@ -1760,7 +1775,7 @@
 
             .agenda-shell {
                 grid-template-columns: 1fr;
-                grid-template-rows: minmax(245px, .82fr) minmax(0, 1.18fr);
+                grid-template-rows: minmax(280px, .9fr) minmax(0, 1.1fr);
                 gap: 7px;
                 padding: 5px;
             }
@@ -1786,6 +1801,11 @@
                 font-size: .76rem;
             }
             .agenda-list-badges { gap: 4px; }
+            .agenda-print-btn {
+                min-height: 38px;
+                padding: 6px;
+                font-size: .72rem;
+            }
             .agenda-sync-status { padding: 4px 7px; font-size: .59rem; }
             .agenda-notes {
                 gap: 5px;
@@ -1825,6 +1845,62 @@
                (display-mode: fullscreen) and (max-width: 700px) {
             body.agenda-open {
                 grid-template-rows: calc(88px + env(safe-area-inset-top, 0px)) minmax(0, 1fr) !important;
+            }
+        }
+
+        .agenda-print-view {
+            display: none;
+        }
+
+        @media print {
+            @page {
+                size: auto;
+                margin: 18mm;
+            }
+
+            html,
+            body {
+                width: auto !important;
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+                display: block !important;
+                background: #fff !important;
+            }
+
+            body > *:not(.agenda-print-view) {
+                display: none !important;
+            }
+
+            .agenda-print-view {
+                display: block !important;
+                width: 100% !important;
+                color: #000 !important;
+                background: #fff !important;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .agenda-print-view h1 {
+                margin: 0 0 18px;
+                padding-bottom: 9px;
+                border-bottom: 2px solid #000;
+                font-size: 22pt;
+            }
+
+            .agenda-print-view ul {
+                margin: 0;
+                padding-left: 26px;
+            }
+
+            .agenda-print-view li {
+                margin: 0 0 10px;
+                padding-left: 3px;
+                color: #000 !important;
+                font-size: 14pt;
+                font-weight: 700;
+                line-height: 1.35;
+                break-inside: avoid;
+                white-space: pre-wrap;
             }
         }
 
@@ -1883,6 +1959,7 @@
                         onkeydown="handleAgendaInputKeydown(event)"
                     ></textarea>
                     <button id="agenda-add-btn" class="agenda-add-btn" type="button" onclick="addAgendaNote()">ADICIONAR AVISO</button>
+                    <button class="agenda-print-btn" type="button" onclick="printPendingAgenda()">🖨️ IMPRIMIR AVISOS</button>
                 </section>
 
                 <section class="agenda-list-panel">
@@ -1897,6 +1974,11 @@
             </div>
         </div>
     </div>
+
+    <section id="agenda-print-view" class="agenda-print-view" aria-hidden="true">
+        <h1>Avisos da Agenda</h1>
+        <ul id="agenda-print-list"></ul>
+    </section>
 
     <!-- MODAL -->
     <div id="report-modal" class="modal-overlay">
@@ -3120,6 +3202,48 @@
                 card.append(content, actions);
                 box.appendChild(card);
             });
+        }
+
+        function printPendingAgenda() {
+            const pendingNotes = agendaNotes
+                .filter(note => !note.completed && !note.deleted && String(note.text || '').trim())
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+            if (!pendingNotes.length) {
+                alert('Não há avisos pendentes para imprimir.');
+                return;
+            }
+
+            const printView = document.getElementById('agenda-print-view');
+            const printList = document.getElementById('agenda-print-list');
+            if (!printView || !printList) return;
+
+            printList.innerHTML = '';
+            pendingNotes.forEach(note => {
+                const item = document.createElement('li');
+                item.textContent = String(note.text || '').trim();
+                printList.appendChild(item);
+            });
+
+            const previousTitle = document.title;
+            let restored = false;
+            const restoreAfterPrint = () => {
+                if (restored) return;
+                restored = true;
+                document.title = previousTitle;
+                printView.setAttribute('aria-hidden', 'true');
+            };
+
+            printView.setAttribute('aria-hidden', 'false');
+            document.title = 'Avisos da Agenda';
+            window.addEventListener('afterprint', restoreAfterPrint, { once: true });
+
+            requestAnimationFrame(() => {
+                setTimeout(() => window.print(), 50);
+            });
+
+            // Proteção para navegadores que não disparam o evento afterprint.
+            setTimeout(restoreAfterPrint, 60000);
         }
 
         function renderDrafts() {
