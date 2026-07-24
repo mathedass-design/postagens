@@ -139,6 +139,12 @@
         .btn-header:hover { background: var(--primary-hover); }
         .btn-theme { background: #4b5563; }
         .btn-theme:hover { background: #374151; }
+        .btn-refresh-header { background: #0f766e; }
+        .btn-refresh-header:hover { background: #115e59; }
+        .btn-refresh-header:disabled {
+            opacity: .72;
+            cursor: wait;
+        }
 
         /* --- CONTAINER PRINCIPAL --- */
         .container {
@@ -1762,7 +1768,7 @@
 
         @media (max-width: 700px) {
             .header-actions {
-                grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+                grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
             }
 
             body.agenda-open {
@@ -1867,6 +1873,7 @@
             <button class="btn-header btn-home-header" onclick="showDashboard()">📅 Planejador</button>
             <button class="btn-header" onclick="showMemes()">😂 Memes</button>
             <button class="btn-header btn-agenda-header" onclick="showAgenda()">🗓️ Agenda</button>
+            <button class="btn-header btn-refresh-header" id="btn-refresh-sync" onclick="manualRefresh()" title="Buscar agora as alterações do celular e do computador">🔄 Atualizar</button>
             <button class="btn-header btn-drive-header" id="btn-drive" onclick="openDriveFolder()" disabled>📂 Drive</button>
             <button class="btn-header btn-theme" onclick="toggleTheme()">🌓 Tema</button>
             <button class="btn-header" onclick="openReportModal()">📊 Relatório</button>
@@ -1970,9 +1977,30 @@
         let agendaSyncInProgress = false;
         let cloudLoadInProgress = false;
         let cloudReloadRequested = false;
+        let manualRefreshInProgress = false;
         const AGENDA_COLOR_COUNT = 8;
         const AGENDA_CACHE_KEY = 'plannerAgendaV1';
         const AGENDA_PENDING_KEY = 'plannerAgendaPendingV1';
+        const SYNC_TIMEOUT_MS = 15000;
+
+        async function fetchWithTimeout(url, options = {}, timeoutMs = SYNC_TIMEOUT_MS) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+            try {
+                return await fetch(url, {
+                    ...options,
+                    signal: controller.signal
+                });
+            } catch (error) {
+                if (error?.name === 'AbortError') {
+                    throw new Error('A sincronização demorou demais. Tente novamente.');
+                }
+                throw error;
+            } finally {
+                clearTimeout(timer);
+            }
+        }
 
         function normalizeAgendaNote(item, index = 0) {
             const colorValue = item?.colorIndex ?? item?.cor;
@@ -2155,7 +2183,7 @@
             try {
                 await flushAgendaPendingOperations();
 
-                const response = await fetch(`${API_URL}?t=${Date.now()}`, {
+                const response = await fetchWithTimeout(`${API_URL}?t=${Date.now()}`, {
                     method: 'GET',
                     cache: 'no-store',
                     redirect: 'follow'
@@ -2208,12 +2236,14 @@
                 if (currentDetailDate) {
                     updateDriveButton();
                 }
+                return true;
             } catch (error) {
                 console.error(error);
                 setAgendaSyncStatus('offline');
                 if (!silent) {
                     alert('O programa abriu com os dados salvos neste aparelho, mas não conseguiu sincronizar com a nuvem agora.');
                 }
+                return false;
             } finally {
                 cloudLoadInProgress = false;
                 title.innerText = originalTitle;
@@ -2221,6 +2251,38 @@
                     cloudReloadRequested = false;
                     setTimeout(() => loadFromCloud({ silent: true }), 0);
                 }
+            }
+        }
+
+        async function manualRefresh() {
+            const button = document.getElementById('btn-refresh-sync');
+            if (!button || manualRefreshInProgress) return;
+
+            if (cloudLoadInProgress || agendaSyncInProgress) {
+                cloudReloadRequested = true;
+                button.textContent = '⏳ Atualizando';
+                button.disabled = true;
+                setTimeout(() => {
+                    button.textContent = '🔄 Atualizar';
+                    button.disabled = false;
+                }, 1400);
+                return;
+            }
+
+            manualRefreshInProgress = true;
+            button.disabled = true;
+            button.textContent = '⏳ Atualizando';
+            setAgendaSyncStatus('syncing');
+
+            try {
+                const success = await loadFromCloud({ silent: true });
+                button.textContent = success ? '✅ Atualizado' : '⚠️ Sem conexão';
+            } finally {
+                manualRefreshInProgress = false;
+                setTimeout(() => {
+                    button.textContent = '🔄 Atualizar';
+                    button.disabled = false;
+                }, 1600);
             }
         }
 
@@ -2794,7 +2856,7 @@
             try {
                 while (agendaPendingOperations.length) {
                     const operation = agendaPendingOperations[0];
-                    await fetch(API_URL, {
+                    await fetchWithTimeout(API_URL, {
                         method: 'POST',
                         mode: 'no-cors',
                         redirect: 'follow',
