@@ -1974,13 +1974,14 @@
 
         .home-action:active { transform: scale(.985); }
         .home-action:disabled { opacity: .55; cursor: wait; transform: none; }
+        .home-action.content { background: #db2777; }
         .home-action.plan { background: #16a34a; }
         .home-action.memes { background: #4f46e5; }
         .home-action.agenda { background: #f59e0b; }
         .home-action.refresh { background: #0f766e; }
         .home-action.drive { background: #0ea5e9; }
         .home-action.theme { background: #4b5563; }
-        .home-action.report { background: #7c3aed; grid-column: span 2; }
+        .home-action.report { background: #7c3aed; }
 
         /* O cabeçalho agora fica limpo: título + botão para voltar à Central. */
         body {
@@ -2108,20 +2109,19 @@
             }
 
             .home-actions-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
-                gap: 7px !important;
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+                gap: 6px !important;
             }
 
             .home-action {
                 min-height: 0 !important;
-                border-radius: 12px !important;
-                padding: 8px 5px !important;
-                font-size: clamp(.82rem, 4.4vw, 1.05rem) !important;
+                border-radius: 11px !important;
+                padding: 7px 3px !important;
+                font-size: clamp(.58rem, 2.7vw, .82rem) !important;
+                line-height: 1.12 !important;
                 box-shadow: 0 4px 11px rgba(0,0,0,.14) !important;
             }
-
-            .home-action.report { grid-column: span 2 !important; }
         }
 
         @media (display-mode: standalone) and (max-width: 700px),
@@ -2135,6 +2135,200 @@
                 min-height: calc(54px + env(safe-area-inset-top, 0px)) !important;
                 padding-top: env(safe-area-inset-top, 0px) !important;
             }
+        }
+
+
+        /* ===== TELA SALVAR CONTEÚDO ===== */
+        #content-view {
+            display: none;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        .content-shell {
+            width: min(1180px, 100%);
+            height: 100%;
+            min-height: 0;
+            margin: 0 auto;
+            padding: 14px;
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr);
+            gap: 12px;
+        }
+
+        .content-heading {
+            text-align: center;
+        }
+
+        .content-heading h2 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: clamp(1.15rem, 2vw, 1.55rem);
+        }
+
+        .content-heading p {
+            margin-top: 5px;
+            color: var(--text-muted);
+            font-size: .88rem;
+        }
+
+        .content-workspace {
+            min-height: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 14px;
+        }
+
+        .content-panel {
+            min-height: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.08);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .content-panel-title {
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 900;
+        }
+
+        .content-textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 220px;
+            resize: none;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            background: var(--upload-bg);
+            color: var(--text-main);
+            font: inherit;
+            font-size: .98rem;
+            line-height: 1.4;
+            outline: none;
+        }
+
+        .content-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+        }
+
+        .content-text-actions,
+        .content-image-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .content-action-btn {
+            min-height: 48px;
+            border: 0;
+            border-radius: 10px;
+            padding: 9px 12px;
+            color: #fff;
+            font-weight: 900;
+            cursor: pointer;
+            font-size: .86rem;
+        }
+
+        .content-action-btn.paste { background: var(--primary); }
+        .content-action-btn.save { background: var(--success); }
+        .content-action-btn.clear { background: #64748b; }
+        .content-action-btn.image-paste { background: #0ea5e9; }
+        .content-action-btn:disabled { opacity: .58; cursor: wait; }
+
+        .content-drop-zone {
+            position: relative;
+            flex: 1;
+            min-height: 220px;
+            border: 3px dashed var(--border-color);
+            border-radius: 14px;
+            background: var(--upload-bg);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 18px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: .18s ease;
+        }
+
+        .content-drop-zone.drag-active {
+            border-color: var(--primary);
+            background: #e0e7ff;
+            color: var(--primary);
+            transform: scale(.995);
+        }
+
+        [data-theme="dark"] .content-drop-zone.drag-active { background: #25234a; }
+
+        .content-drop-zone input { display: none; }
+
+        .content-drop-instructions {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .content-drop-icon { font-size: 2.3rem; }
+        .content-drop-main { font-size: 1rem; font-weight: 900; color: var(--text-main); }
+        .content-drop-sub { font-size: .78rem; line-height: 1.35; }
+
+        .content-preview {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+            background: rgba(0,0,0,.04);
+        }
+
+        .content-upload-status {
+            min-height: 22px;
+            color: var(--text-muted);
+            text-align: center;
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
+        .content-upload-status.uploading { color: var(--primary); }
+        .content-upload-status.success { color: var(--success); }
+
+        @media (max-width: 700px) {
+            body.content-open {
+                height: auto !important;
+                min-height: 100dvh !important;
+                overflow-y: auto !important;
+                display: block !important;
+            }
+
+            body.content-open .container {
+                height: auto !important;
+                min-height: calc(100dvh - 54px) !important;
+                overflow: visible !important;
+                padding: 7px !important;
+            }
+
+            #content-view { height: auto !important; overflow: visible !important; }
+            .content-shell { height: auto; padding: 5px; gap: 8px; }
+            .content-heading h2 { font-size: 1rem; }
+            .content-heading p { font-size: .7rem; }
+            .content-workspace { grid-template-columns: 1fr; gap: 9px; }
+            .content-panel { padding: 10px; border-radius: 12px; gap: 8px; }
+            .content-textarea { min-height: 170px; font-size: .9rem; padding: 11px; }
+            .content-drop-zone { min-height: 200px; padding: 12px; }
+            .content-action-btn { min-height: 44px; font-size: .75rem; }
         }
 
 </style>
@@ -2156,13 +2350,55 @@
                     <span class="home-menu-subtitle">Escolha uma função para entrar.</span>
                 </div>
                 <div class="home-actions-grid">
+                    <button class="home-action content" type="button" onclick="showContent()">💾 Salvar conteúdo</button>
                     <button class="home-action plan" type="button" onclick="showDashboard()">📅 Planejador</button>
-                    <button class="home-action memes" type="button" onclick="showMemes()">😂 Memes</button>
-                    <button class="home-action agenda" type="button" onclick="showAgenda()">🗓️ Agenda</button>
+                    <button class="home-action memes" type="button" onclick="showMemes()">📝 Textos</button>
+                    <button class="home-action agenda" type="button" onclick="showAgenda()">📌 Avisos</button>
                     <button class="home-action refresh" id="btn-refresh-sync" type="button" onclick="manualRefresh()" title="Buscar agora as alterações do celular e do computador">🔄 Atualizar</button>
                     <button class="home-action drive" id="btn-drive" type="button" onclick="openDriveFolder()" disabled>📂 Drive</button>
                     <button class="home-action theme" type="button" onclick="toggleTheme()">🌓 Tema</button>
                     <button class="home-action report" type="button" onclick="openReportModal()">📊 Relatório</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-view" style="display: none;">
+            <div class="content-shell">
+                <div class="content-heading">
+                    <h2>💾 Salvar conteúdo</h2>
+                    <p>Digite, cole ou salve um texto. Para imagens, clique, cole ou arraste para a área de imagem.</p>
+                </div>
+
+                <div class="content-workspace">
+                    <section class="content-panel">
+                        <div class="content-panel-title">📝 Texto</div>
+                        <textarea id="home-content-text" class="content-textarea" placeholder="Digite ou cole seu texto aqui..." onpaste="handleHomePaste(event)"></textarea>
+                        <div class="content-text-actions">
+                            <button id="btn-home-paste" class="content-action-btn paste" type="button" onclick="pasteHomeText()">📋 COLAR TEXTO</button>
+                            <button id="btn-home-save-text" class="content-action-btn save" type="button" onclick="saveHomeText()">💾 SALVAR TEXTO</button>
+                            <button class="content-action-btn clear" type="button" onclick="clearHomeText()" style="grid-column: 1 / -1;">🧹 LIMPAR TEXTO</button>
+                        </div>
+                    </section>
+
+                    <section class="content-panel" onpaste="handleContentPanelPaste(event)">
+                        <div class="content-panel-title">🖼️ Imagem</div>
+                        <label class="content-drop-zone" id="home-drop-zone"
+                            ondragover="handleHomeDragOver(event)" ondragleave="handleHomeDragLeave(event)" ondrop="handleHomeDrop(event)">
+                            <div class="content-drop-instructions" id="content-drop-instructions">
+                                <span class="content-drop-icon">🖼️</span>
+                                <span class="content-drop-main">Clique ou arraste uma imagem</span>
+                                <span class="content-drop-sub">Você também pode copiar uma imagem e usar “COLAR IMAGEM”.</span>
+                            </div>
+                            <img id="content-image-preview" class="content-preview" alt="Prévia da imagem selecionada">
+                            <input id="home-image-input" type="file" accept="image/*" onchange="prepareHomeSelectedImage()">
+                        </label>
+                        <div class="content-image-actions">
+                            <button id="btn-paste-image" class="content-action-btn image-paste" type="button" onclick="pasteHomeImage()">📋 COLAR IMAGEM</button>
+                            <button id="btn-save-image" class="content-action-btn save" type="button" onclick="savePreparedHomeImage()" disabled>💾 SALVAR IMAGEM</button>
+                            <button id="btn-clear-image" class="content-action-btn clear" type="button" onclick="clearPreparedHomeImage()" style="grid-column: 1 / -1;" disabled>🗑️ REMOVER IMAGEM</button>
+                        </div>
+                        <div id="home-upload-status" class="content-upload-status">Nenhuma imagem selecionada.</div>
+                    </section>
                 </div>
             </div>
         </div>
@@ -2183,7 +2419,7 @@
             <div class="memes-shell">
                 <section class="draft-list-panel memes-list-panel">
                     <div class="memes-title-row">
-                        <h2>😂 Memes — textos salvos</h2>
+                        <h2>📝 Textos salvos</h2>
                         <button class="back-btn memes-back" onclick="showHome()">⬅ Início</button>
                     </div>
                     <div id="draft-cards" class="draft-cards"></div>
@@ -2221,7 +2457,7 @@
     </div>
 
     <section id="agenda-print-view" class="agenda-print-view" aria-hidden="true">
-        <h1>Avisos da Agenda</h1>
+        <h1>Avisos</h1>
         <ul id="agenda-print-list"></ul>
     </section>
 
@@ -2347,15 +2583,18 @@
 
         function restoreCurrentTabTitle() {
             const homeVisible = document.getElementById('home-view')?.style.display === 'block';
+            const contentVisible = document.getElementById('content-view')?.style.display === 'block';
             const agendaVisible = document.getElementById('agenda-view')?.style.display === 'block';
             const memesVisible = document.getElementById('draft-view')?.style.display === 'block';
 
             if (homeVisible) {
                 setBrowserTabTitle('AGENDA');
+            } else if (contentVisible) {
+                setBrowserTabTitle('SALVAR CONTEÚDO');
             } else if (agendaVisible) {
-                setBrowserTabTitle('AGENDA');
+                setBrowserTabTitle('AVISOS');
             } else if (memesVisible) {
-                setBrowserTabTitle('MEMES');
+                setBrowserTabTitle('TEXTOS');
             } else {
                 setBrowserTabTitle('PLANEJAMENTO');
             }
@@ -2585,8 +2824,6 @@
             grid.innerHTML = '';
 
             dates.forEach((dateObj, index) => {
-                if (index === 4) grid.appendChild(createComposerCard());
-
                 const card = document.createElement('div');
                 card.className = 'date-card static-date-card';
 
@@ -2659,32 +2896,14 @@
             }
         }
 
-        function createComposerCard() {
-            const card = document.createElement('section');
-            card.className = 'composer-card';
-            card.innerHTML = `
-                <div class="composer-title">➕ ADICIONAR CONTEÚDO</div>
-                <textarea id="home-content-text" class="composer-textarea" placeholder="Digite ou cole um texto..." onpaste="handleHomePaste(event)"></textarea>
-                <div class="composer-actions">
-                    <button id="btn-home-paste" class="composer-btn paste" onclick="pasteHomeContent()">📋 COLAR</button>
-                    <button id="btn-home-save-text" class="composer-btn save" onclick="saveHomeText()">SALVAR TEXTO</button>
-                </div>
-                <label class="composer-drop-zone" id="home-drop-zone"
-                    ondragover="handleHomeDragOver(event)" ondragleave="handleHomeDragLeave(event)" ondrop="handleHomeDrop(event)">
-                    🖼️ Clique, arraste ou cole uma imagem
-                    <input id="home-image-input" type="file" accept="image/*" onchange="uploadHomeSelectedImage()">
-                </label>
-                <div id="home-upload-status" class="composer-status">A imagem será enviada diretamente ao Drive.</div>
-            `;
-            return card;
-        }
 
         function showDetail(dateId, dateLabel) {
             currentDetailDate = dateId;
             setBrowserTabTitle('PLANEJAMENTO');
             document.body.classList.add('detail-open');
-            document.body.classList.remove('draft-open', 'agenda-open', 'home-open');
+            document.body.classList.remove('draft-open', 'agenda-open', 'home-open', 'content-open');
             document.getElementById('home-view').style.display = 'none';
+            document.getElementById('content-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('draft-view').style.display = 'none';
             document.getElementById('agenda-view').style.display = 'none';
@@ -2750,21 +2969,37 @@
         function showHome() {
             currentDetailDate = '';
             setBrowserTabTitle('AGENDA');
-            document.body.classList.remove('detail-open', 'draft-open', 'agenda-open');
+            document.body.classList.remove('detail-open', 'draft-open', 'agenda-open', 'content-open');
             document.body.classList.add('home-open');
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('draft-view').style.display = 'none';
             document.getElementById('agenda-view').style.display = 'none';
+            document.getElementById('content-view').style.display = 'none';
             document.getElementById('home-view').style.display = 'block';
             updateDriveButton();
+        }
+
+        function showContent() {
+            currentDetailDate = '';
+            setBrowserTabTitle('SALVAR CONTEÚDO');
+            document.body.classList.remove('detail-open', 'draft-open', 'agenda-open', 'home-open');
+            document.body.classList.add('content-open');
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('draft-view').style.display = 'none';
+            document.getElementById('agenda-view').style.display = 'none';
+            document.getElementById('content-view').style.display = 'block';
+            setTimeout(() => document.getElementById('home-content-text')?.focus(), 50);
         }
 
         function showDashboard() {
             currentDetailDate = '';
             setBrowserTabTitle('PLANEJAMENTO');
-            document.body.classList.remove('detail-open', 'draft-open', 'agenda-open', 'home-open');
+            document.body.classList.remove('detail-open', 'draft-open', 'agenda-open', 'home-open', 'content-open');
             document.getElementById('home-view').style.display = 'none';
+            document.getElementById('content-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('draft-view').style.display = 'none';
             document.getElementById('agenda-view').style.display = 'none';
@@ -2936,12 +3171,16 @@
         }
 
 
+        let preparedHomeImage = null;
+        let preparedHomeImageUrl = '';
+
         async function saveHomeText() {
             const input = document.getElementById('home-content-text');
             const btn = document.getElementById('btn-home-save-text');
             const texto = String(input?.value || '').trim();
             if (!texto) {
-                alert('Digite ou cole um texto para salvar em Memes.');
+                alert('Digite ou cole um texto antes de salvar.');
+                input?.focus();
                 return;
             }
             await saveDraftTextFromHome(texto, btn, input);
@@ -2960,7 +3199,7 @@
                 });
                 drafts.push(novo);
                 input.value = '';
-                btn.textContent = 'SALVO EM MEMES!';
+                btn.textContent = '✅ SALVO EM TEXTOS!';
                 renderDrafts();
             } catch (error) {
                 console.error(error);
@@ -2972,6 +3211,13 @@
             }
         }
 
+        function clearHomeText() {
+            const input = document.getElementById('home-content-text');
+            if (!input) return;
+            input.value = '';
+            input.focus();
+        }
+
         async function handleHomePaste(event) {
             const items = Array.from(event.clipboardData?.items || []);
             const imageItem = items.find(item => item.type?.startsWith('image/'));
@@ -2980,35 +3226,64 @@
             const blob = imageItem.getAsFile();
             if (!blob) return;
             const ext = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
-            const file = new File([blob], `meme-colado-${Date.now()}.${ext}`, { type: blob.type });
-            await uploadHomeImage(file);
+            prepareHomeImage(new File([blob], `imagem-colada-${Date.now()}.${ext}`, { type: blob.type }));
         }
 
-        async function pasteHomeContent() {
+        async function handleContentPanelPaste(event) {
+            const items = Array.from(event.clipboardData?.items || []);
+            const imageItem = items.find(item => item.type?.startsWith('image/'));
+            if (!imageItem) return;
+            event.preventDefault();
+            const blob = imageItem.getAsFile();
+            if (!blob) return;
+            const ext = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+            prepareHomeImage(new File([blob], `imagem-colada-${Date.now()}.${ext}`, { type: blob.type }));
+        }
+
+        async function pasteHomeText() {
             const btn = document.getElementById('btn-home-paste');
             const input = document.getElementById('home-content-text');
             const original = btn.textContent;
             btn.disabled = true;
             btn.textContent = 'LENDO...';
             try {
-                if (navigator.clipboard?.read) {
-                    const items = await navigator.clipboard.read();
-                    for (const item of items) {
-                        const imageType = item.types.find(type => type.startsWith('image/'));
-                        if (imageType) {
-                            const blob = await item.getType(imageType);
-                            const ext = (imageType.split('/')[1] || 'png').replace('jpeg', 'jpg');
-                            await uploadHomeImage(new File([blob], `meme-colado-${Date.now()}.${ext}`, { type: imageType }));
-                            return;
-                        }
-                    }
-                }
                 const text = await navigator.clipboard.readText();
-                if (text) input.value = text;
-                else alert('Não encontrei texto ou imagem na área de transferência.');
+                if (text) {
+                    input.value = text;
+                    input.focus();
+                } else {
+                    alert('Não encontrei texto na área de transferência.');
+                }
             } catch (error) {
                 console.error(error);
-                alert('Cole diretamente dentro da caixa de texto.');
+                alert('Não consegui acessar a área de transferência. Você também pode colar diretamente na caixa de texto.');
+                input?.focus();
+            } finally {
+                btn.disabled = false;
+                btn.textContent = original;
+            }
+        }
+
+        async function pasteHomeImage() {
+            const btn = document.getElementById('btn-paste-image');
+            const original = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'LENDO...';
+            try {
+                if (!navigator.clipboard?.read) throw new Error('Clipboard image read unavailable');
+                const items = await navigator.clipboard.read();
+                for (const item of items) {
+                    const imageType = item.types.find(type => type.startsWith('image/'));
+                    if (!imageType) continue;
+                    const blob = await item.getType(imageType);
+                    const ext = (imageType.split('/')[1] || 'png').replace('jpeg', 'jpg');
+                    prepareHomeImage(new File([blob], `imagem-colada-${Date.now()}.${ext}`, { type: imageType }));
+                    return;
+                }
+                alert('Não encontrei uma imagem copiada.');
+            } catch (error) {
+                console.error(error);
+                alert('Não consegui ler a imagem copiada. Você também pode clicar na área de imagem ou arrastar o arquivo para ela.');
             } finally {
                 btn.disabled = false;
                 btn.textContent = original;
@@ -3019,24 +3294,28 @@
             event.preventDefault();
             event.currentTarget.classList.add('drag-active');
         }
+
         function handleHomeDragLeave(event) {
             event.preventDefault();
             event.currentTarget.classList.remove('drag-active');
         }
+
         async function handleHomeDrop(event) {
             event.preventDefault();
             event.currentTarget.classList.remove('drag-active');
-            const file = event.dataTransfer.files?.[0];
-            if (file) await uploadHomeImage(file);
+            const file = Array.from(event.dataTransfer.files || []).find(item => item.type?.startsWith('image/'));
+            if (file) prepareHomeImage(file);
+            else alert('Arraste um arquivo de imagem válido.');
         }
-        async function uploadHomeSelectedImage() {
+
+        function prepareHomeSelectedImage() {
             const input = document.getElementById('home-image-input');
             const file = input.files?.[0];
-            if (file) await uploadHomeImage(file);
+            if (file) prepareHomeImage(file);
             input.value = '';
         }
-        async function uploadHomeImage(file) {
-            const status = document.getElementById('home-upload-status');
+
+        function prepareHomeImage(file) {
             if (!file || !file.type.startsWith('image/')) {
                 alert('Escolha uma imagem válida.');
                 return;
@@ -3045,8 +3324,77 @@
                 alert('A imagem ultrapassa 20 MB.');
                 return;
             }
+
+            if (preparedHomeImageUrl) URL.revokeObjectURL(preparedHomeImageUrl);
+            preparedHomeImage = file;
+            preparedHomeImageUrl = URL.createObjectURL(file);
+
+            const preview = document.getElementById('content-image-preview');
+            const instructions = document.getElementById('content-drop-instructions');
+            const saveBtn = document.getElementById('btn-save-image');
+            const clearBtn = document.getElementById('btn-clear-image');
+            const status = document.getElementById('home-upload-status');
+
+            if (preview) {
+                preview.src = preparedHomeImageUrl;
+                preview.style.display = 'block';
+            }
+            if (instructions) instructions.style.display = 'none';
+            if (saveBtn) saveBtn.disabled = false;
+            if (clearBtn) clearBtn.disabled = false;
+            if (status) status.textContent = `Imagem pronta: ${file.name || 'imagem copiada'}`;
+        }
+
+        function clearPreparedHomeImage() {
+            if (preparedHomeImageUrl) URL.revokeObjectURL(preparedHomeImageUrl);
+            preparedHomeImage = null;
+            preparedHomeImageUrl = '';
+
+            const preview = document.getElementById('content-image-preview');
+            const instructions = document.getElementById('content-drop-instructions');
+            const saveBtn = document.getElementById('btn-save-image');
+            const clearBtn = document.getElementById('btn-clear-image');
+            const status = document.getElementById('home-upload-status');
+
+            if (preview) {
+                preview.removeAttribute('src');
+                preview.style.display = 'none';
+            }
+            if (instructions) instructions.style.display = 'flex';
+            if (saveBtn) saveBtn.disabled = true;
+            if (clearBtn) clearBtn.disabled = true;
+            if (status) {
+                status.textContent = 'Nenhuma imagem selecionada.';
+                status.classList.remove('success', 'uploading');
+            }
+        }
+
+        async function savePreparedHomeImage() {
+            if (!preparedHomeImage) {
+                alert('Escolha, cole ou arraste uma imagem primeiro.');
+                return;
+            }
+            const success = await uploadHomeImage(preparedHomeImage);
+            if (success) setTimeout(clearPreparedHomeImage, 1000);
+        }
+
+        async function uploadHomeImage(file) {
+            const status = document.getElementById('home-upload-status');
+            const saveBtn = document.getElementById('btn-save-image');
+            if (!file || !file.type.startsWith('image/')) {
+                alert('Escolha uma imagem válida.');
+                return false;
+            }
+            if (file.size > 20 * 1024 * 1024) {
+                alert('A imagem ultrapassa 20 MB.');
+                return false;
+            }
+
+            if (saveBtn) saveBtn.disabled = true;
             status.textContent = 'ENVIANDO PARA O DRIVE...';
             status.classList.add('uploading');
+            status.classList.remove('success');
+
             try {
                 const base64 = await fileToDataUrl(file);
                 await fetch(API_URL, {
@@ -3059,27 +3407,28 @@
                         tipo_imagem: file.type
                     })
                 });
-                status.textContent = '✅ IMAGEM ENVIADA PARA O DRIVE!';
+                status.textContent = '✅ IMAGEM SALVA NO DRIVE!';
                 status.classList.remove('uploading');
                 status.classList.add('success');
+                return true;
             } catch (error) {
                 console.error(error);
-                status.textContent = '❌ ERRO AO ENVIAR A IMAGEM';
+                status.textContent = '❌ ERRO AO SALVAR A IMAGEM';
                 status.classList.remove('uploading');
-                alert('Não foi possível enviar a imagem.');
+                alert('Não foi possível salvar a imagem.');
+                if (saveBtn) saveBtn.disabled = false;
+                return false;
             }
-            setTimeout(() => {
-                status.textContent = 'A imagem será enviada diretamente ao Drive.';
-                status.classList.remove('success', 'uploading');
-            }, 1800);
         }
+
 
         function showMemes() {
             currentDetailDate = '';
-            setBrowserTabTitle('MEMES');
-            document.body.classList.remove('detail-open', 'agenda-open', 'home-open');
+            setBrowserTabTitle('TEXTOS');
+            document.body.classList.remove('detail-open', 'agenda-open', 'home-open', 'content-open');
             document.body.classList.add('draft-open');
             document.getElementById('home-view').style.display = 'none';
+            document.getElementById('content-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('agenda-view').style.display = 'none';
@@ -3237,10 +3586,11 @@
         function showAgenda() {
             currentDetailDate = '';
             editingAgendaId = null;
-            setBrowserTabTitle('AGENDA');
-            document.body.classList.remove('detail-open', 'draft-open', 'home-open');
+            setBrowserTabTitle('AVISOS');
+            document.body.classList.remove('detail-open', 'draft-open', 'home-open', 'content-open');
             document.body.classList.add('agenda-open');
             document.getElementById('home-view').style.display = 'none';
+            document.getElementById('content-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'none';
             document.getElementById('draft-view').style.display = 'none';
@@ -3303,7 +3653,7 @@
         function deleteAgendaNote(id) {
             const note = agendaNotes.find(item => String(item.id) === String(id));
             if (!note) return;
-            if (!confirm('Apagar este aviso da Agenda?')) return;
+            if (!confirm('Apagar este aviso?')) return;
             const deletedAt = new Date().toISOString();
             agendaNotes = agendaNotes.filter(item => String(item.id) !== String(id));
             if (String(editingAgendaId) === String(id)) editingAgendaId = null;
@@ -3500,7 +3850,7 @@
             };
 
             printView.setAttribute('aria-hidden', 'false');
-            document.title = 'Avisos da Agenda';
+            document.title = 'Avisos';
             window.addEventListener('afterprint', restoreAfterPrint, { once: true });
 
             requestAnimationFrame(() => {
@@ -3743,7 +4093,7 @@
             if (!btn) return;
             const ready = Boolean(memesFolderUrl || driveFolderUrl);
             btn.disabled = !ready;
-            btn.innerText = ready ? '📂 Drive' : '📂 Aguarde';
+            btn.innerText = '📂 Drive';
         }
 
         function openDriveFolder() {
