@@ -2331,6 +2331,150 @@
             .content-action-btn { min-height: 44px; font-size: .75rem; }
         }
 
+
+        /* ===== CORREÇÃO FINAL: MENU MÓVEL FIXO + ENTRADA RÁPIDA ===== */
+        .content-textarea {
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+        .content-drop-zone,
+        .content-action-btn,
+        .home-action {
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 700px) {
+            /* A tela inicial sempre cabe inteira: 4 botões em cima e 4 embaixo. */
+            body.home-open {
+                width: 100% !important;
+                height: 100dvh !important;
+                min-height: 100dvh !important;
+                max-height: 100dvh !important;
+                overflow: hidden !important;
+                display: grid !important;
+                grid-template-rows: 48px minmax(0, 1fr) !important;
+            }
+
+            body.home-open .global-header {
+                position: relative !important;
+                top: auto !important;
+                height: 48px !important;
+                min-height: 48px !important;
+                max-height: 48px !important;
+                padding: 0 8px !important;
+            }
+
+            body.home-open .global-header h1 {
+                font-size: .88rem !important;
+            }
+
+            body.home-open .container {
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 0 !important;
+                max-height: 100% !important;
+                padding: 6px !important;
+                overflow: hidden !important;
+            }
+
+            body.home-open #home-view,
+            body.home-open .home-menu-shell,
+            body.home-open .home-actions-grid {
+                min-height: 0 !important;
+                overflow: hidden !important;
+            }
+
+            body.home-open #home-view {
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            body.home-open .home-menu-shell {
+                width: 100% !important;
+                height: 100% !important;
+                padding: 4px !important;
+                gap: 5px !important;
+                grid-template-rows: 34px minmax(0, 1fr) !important;
+            }
+
+            body.home-open .home-menu-title {
+                height: 34px !important;
+                min-height: 34px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: .82rem !important;
+                line-height: 1 !important;
+                overflow: hidden !important;
+            }
+
+            body.home-open .home-menu-subtitle {
+                margin-top: 2px !important;
+                font-size: .56rem !important;
+                line-height: 1 !important;
+            }
+
+            body.home-open .home-actions-grid {
+                width: 100% !important;
+                height: 100% !important;
+                display: grid !important;
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+                gap: 5px !important;
+            }
+
+            body.home-open .home-action {
+                width: 100% !important;
+                height: 100% !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+                max-width: none !important;
+                max-height: none !important;
+                padding: 5px 2px !important;
+                border-radius: 10px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+                white-space: normal !important;
+                overflow: hidden !important;
+                font-size: clamp(.55rem, 2.55vw, .78rem) !important;
+                line-height: 1.08 !important;
+            }
+
+            /* Dentro de Salvar conteúdo, tudo continua acessível e confortável no toque. */
+            body.content-open .content-textarea {
+                min-height: 180px !important;
+                font-size: 16px !important; /* evita zoom automático do iPhone */
+                line-height: 1.4 !important;
+            }
+
+            body.content-open .content-action-btn {
+                min-height: 48px !important;
+                font-size: .78rem !important;
+            }
+
+            body.content-open .content-drop-zone {
+                min-height: 190px !important;
+            }
+        }
+
+        @media (display-mode: standalone) and (max-width: 700px),
+               (display-mode: fullscreen) and (max-width: 700px) {
+            body.home-open {
+                grid-template-rows: calc(48px + env(safe-area-inset-top, 0px)) minmax(0, 1fr) !important;
+            }
+
+            body.home-open .global-header {
+                height: calc(48px + env(safe-area-inset-top, 0px)) !important;
+                min-height: calc(48px + env(safe-area-inset-top, 0px)) !important;
+                max-height: calc(48px + env(safe-area-inset-top, 0px)) !important;
+                padding-top: env(safe-area-inset-top, 0px) !important;
+            }
+        }
+
 </style>
 </head>
 <body>
@@ -2372,7 +2516,7 @@
                 <div class="content-workspace">
                     <section class="content-panel">
                         <div class="content-panel-title">📝 Texto</div>
-                        <textarea id="home-content-text" class="content-textarea" placeholder="Digite ou cole seu texto aqui..." onpaste="handleHomePaste(event)"></textarea>
+                        <textarea id="home-content-text" class="content-textarea" placeholder="Digite ou cole seu texto aqui..." oninput="persistHomeContentDraft()" onpaste="handleHomePaste(event)" autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
                         <div class="content-text-actions">
                             <button id="btn-home-paste" class="content-action-btn paste" type="button" onclick="pasteHomeText()">📋 COLAR TEXTO</button>
                             <button id="btn-home-save-text" class="content-action-btn save" type="button" onclick="saveHomeText()">💾 SALVAR TEXTO</button>
@@ -2382,7 +2526,8 @@
 
                     <section class="content-panel" onpaste="handleContentPanelPaste(event)">
                         <div class="content-panel-title">🖼️ Imagem</div>
-                        <label class="content-drop-zone" id="home-drop-zone"
+                        <label class="content-drop-zone" id="home-drop-zone" tabindex="0"
+                            onpaste="handleContentPanelPaste(event)"
                             ondragover="handleHomeDragOver(event)" ondragleave="handleHomeDragLeave(event)" ondrop="handleHomeDrop(event)">
                             <div class="content-drop-instructions" id="content-drop-instructions">
                                 <span class="content-drop-icon">🖼️</span>
@@ -2765,7 +2910,11 @@
                 });
 
                 saveLocalCache();
-                renderDashboard();
+                // Não recria telas de edição em segundo plano. Isso evita apagar uma ideia
+                // enquanto o usuário digita/cola texto durante uma sincronização automática.
+                if (document.getElementById('dashboard-view')?.style.display === 'block') {
+                    renderDashboard();
+                }
                 if (currentDetailDate) {
                     updateDriveButton();
                 }
@@ -2991,6 +3140,7 @@
             document.getElementById('draft-view').style.display = 'none';
             document.getElementById('agenda-view').style.display = 'none';
             document.getElementById('content-view').style.display = 'block';
+            restoreHomeContentDraft();
             setTimeout(() => document.getElementById('home-content-text')?.focus(), 50);
         }
 
@@ -3173,6 +3323,38 @@
 
         let preparedHomeImage = null;
         let preparedHomeImageUrl = '';
+        const HOME_CONTENT_DRAFT_KEY = 'agendaHomeContentDraftV1';
+
+        function persistHomeContentDraft() {
+            const input = document.getElementById('home-content-text');
+            if (!input) return;
+            try {
+                const value = input.value || '';
+                if (value) localStorage.setItem(HOME_CONTENT_DRAFT_KEY, value);
+                else localStorage.removeItem(HOME_CONTENT_DRAFT_KEY);
+            } catch (error) {
+                console.warn('Não foi possível guardar o rascunho local do texto.', error);
+            }
+        }
+
+        function restoreHomeContentDraft() {
+            const input = document.getElementById('home-content-text');
+            if (!input || input.value) return;
+            try {
+                const saved = localStorage.getItem(HOME_CONTENT_DRAFT_KEY) || '';
+                if (saved) input.value = saved;
+            } catch (error) {
+                console.warn('Não foi possível restaurar o rascunho local do texto.', error);
+            }
+        }
+
+        function discardHomeContentDraft() {
+            try {
+                localStorage.removeItem(HOME_CONTENT_DRAFT_KEY);
+            } catch (error) {
+                console.warn('Não foi possível apagar o rascunho local do texto.', error);
+            }
+        }
 
         async function saveHomeText() {
             const input = document.getElementById('home-content-text');
@@ -3199,6 +3381,7 @@
                 });
                 drafts.push(novo);
                 input.value = '';
+                discardHomeContentDraft();
                 btn.textContent = '✅ SALVO EM TEXTOS!';
                 renderDrafts();
             } catch (error) {
@@ -3215,6 +3398,7 @@
             const input = document.getElementById('home-content-text');
             if (!input) return;
             input.value = '';
+            discardHomeContentDraft();
             input.focus();
         }
 
@@ -3249,7 +3433,14 @@
             try {
                 const text = await navigator.clipboard.readText();
                 if (text) {
-                    input.value = text;
+                    const start = Number.isInteger(input.selectionStart) ? input.selectionStart : input.value.length;
+                    const end = Number.isInteger(input.selectionEnd) ? input.selectionEnd : start;
+                    const before = input.value.slice(0, start);
+                    const after = input.value.slice(end);
+                    input.value = before + text + after;
+                    const cursor = start + text.length;
+                    if (typeof input.setSelectionRange === 'function') input.setSelectionRange(cursor, cursor);
+                    persistHomeContentDraft();
                     input.focus();
                 } else {
                     alert('Não encontrei texto na área de transferência.');
@@ -4211,7 +4402,12 @@
             renderAgendaNotes();
             setAgendaSyncStatus(agendaPendingOperations.length ? 'syncing' : 'synced');
             updateDriveButton();
+            restoreHomeContentDraft();
             showHome();
+
+            // Protege ideias rápidas mesmo se o app for fechado ou enviado para segundo plano.
+            window.addEventListener('pagehide', persistHomeContentDraft);
+            window.addEventListener('beforeunload', persistHomeContentDraft);
 
             // Sincroniza em segundo plano sem segurar a abertura da tela.
             setTimeout(() => loadFromCloud({ silent: true }), 100);
